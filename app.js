@@ -2,27 +2,56 @@
 var canvas = $('#stage').Scale({
   images: [
     {
+      url: './22.png  ',
+      position: 'center',
+      offset: {
+        x: 0,
+        y: 0
+      },
+      mask: false,
+      scale: 0.4
+    },
+    {
       url: './timg.jpg',
       position: 'center',
       offset: {
         x: 0,
         y: 0
       },
-      mask: true,
+      mask: false,
+      scale: 1
     },
     {
-      url: './img3.png',
-      position: 'bottom center',
+      url: './img4.png',
+      position: 'left center',
       offset: {
         x: 0,
         y: 0
       },
-      mask: false,
+      mask: false
     }
   ],
-  foregrounds: {
-
-  }
+  foregrounds: [
+    {
+      url: './img6.jpg',
+      position: 'center',
+      offset: {
+        x: 0,
+        y: 100
+      },
+      scale: 2
+    },
+    {
+      url: './timg.jpg',
+      position: 'top right',
+      offset: {
+        x: 0,
+        y: 0
+      },
+      mask: true,
+      scale: 1
+    }
+  ]
 })
 
 var $imgLists = $('.img')
