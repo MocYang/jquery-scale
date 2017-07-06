@@ -1,6 +1,7 @@
 <html>
 
 <head>
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <style>
     #stage {
@@ -29,15 +30,24 @@
 </head>
 
 <body>
+<hr>
 <div class="wrapper" id="stage"></div>
-
+<hr>
 <ul class="img__list">
   <li class="img__item"><img class="img" src="./examples/images/img1.png" alt=""></li>
   <li class="img__item"><img class="img" src="./examples/images/img2.png" alt=""></li>
   <li class="img__item"><img class="img" src="./examples/images/img3.png" alt=""></li>
   <li class="img__item"><img class="img" src="./examples/images/img4.png" alt=""></li>
 </ul>
-
+<ul>
+  <li><button class="add-back">添加背景图</button></li>
+  <li><button class="add-fore">添加前景图</button></li>
+  <li><input class="remove-back" type="text"><button class="remove-back-btn">移除该背景图</button></li>
+  <li><input class="remove-fore" type="text"><button class="remove-fore-btn">移除该前景图</button></li>
+  <li><input class="remove" type="text"><button class="remove-btn">移除一张图</button></li>
+  <li><input class="exchange-back" type="text"><button class="exchange-back-btn">替换某张背景图</button></li>
+  <li><input class="exchange-fore" type="text"><button class="exchange-fore-btn">替换某张前景图</button></li>
+</ul>
 <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
 <script src="./dist/js/easeljs.min.js"></script>
 <script src="dist/js/jquery-scale.js"></script>

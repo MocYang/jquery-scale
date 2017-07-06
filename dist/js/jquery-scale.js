@@ -41,29 +41,144 @@
 
     var self = this
 
-    // 实例方法
-    // 替换背景图
-    this.changeBackgroundImage = function (img, offset) {
-      this.removeImage(this.image)
-      // addImage(this, img, offset,)
+    // 辅助函数
+    /**
+     * 根据给定的图片options和bm，生成scale的专用对象
+     * @param options image的配置项集合
+     * @param bm      image对应的BigMap实例
+     * @return {object}        返回一个Scale专用的对象
+     */
+    function createScaleObj(options, bm) {
+      return $.extend({}, options, {
+        bm: bm
+      })
     }
 
-    // 移除stage上的一张给定的图片
-    this.removeImage = function (img) {
-      if (img != null) {
-        this.stage.removeChild(img);
+    /**
+     * 添加背景图
+     * @param options 一张图片的URL，或image-options对象
+     * @param exitOptions
+     */
+    function addBackgroundImage(options, exitOptions) {
+      var index = self.images.length
+      var imageOptions
+      if (typeof options === 'string') {
+        imageOptions = $.extend({}, option, {
+          id: index
+        }, {
+          url: options
+        })
+        if (imageOptions) {
+          addImage(self, imageOptions, function (bm) {
+            self.images.push(createScaleObj(imageOptions, bm))
+            drawContainerImage(self, self.images)
+            addEvents(self, bm, imageOptions)
+          })
+        }
+      } else if (typeof options === 'object') {
+        imageOptions = $.extend({}, option, {
+          id: index
+        }, options)
+        if (imageOptions) {
+          addImage(self, imageOptions, function (bm) {
+            self.images.push(createScaleObj(imageOptions, bm))
+            drawContainerImage(self, self.images)
+            addEvents(self, bm, imageOptions)
+          })
+        }
       }
     }
 
-    // 清空所有的图片--包含背景图和前景图
-    this.removeAll = function () {
-      this.stage.removeAllChildren()
+    /**
+     * 添加前景图
+     * @param options
+     */
+    function addForegroundImage(options) {
+      var index = self.foregrounds.length
+      var imageOptions
+      if (typeof options === 'string') {
+        imageOptions = $.extend({}, option, {
+          id: index
+        }, {
+          url: options
+        })
+        if (imageOptions) {
+          addImage(self, imageOptions, function (bm) {
+            self.foregrounds.push(createScaleObj(imageOptions, bm))
+            bm.zIndex = 9999
+            drawForegroundImages(self, self.foregrounds)
+          })
+        }
+      } else if (typeof options === 'object') {
+        imageOptions = $.extend({}, option, {
+          id: index
+        }, options)
+        if (imageOptions) {
+          addImage(self, imageOptions, function (bm) {
+            self.foregrounds.push(createScaleObj(imageOptions, bm))
+            bm.zIndex = 9999
+            drawForegroundImages(self, self.foregrounds)
+          })
+        }
+      }
     }
 
-    // 返回所有的options
-    this.getOptions = function (id) {
+    /**
+     * 移除数组中的一个item，并返回
+     * @param array
+     * @param key
+     * @param value
+     * @return {*}
+     */
+    function removeItemInArray(array, key, value) {
+      for (var i = 0; i < array.length; i++) {
+        if (value === array[i][key]) {
+          array = array.slice(0, i).concat(array.slice(i + 1))
+          i--;
+        }
+      }
+
+      return array
+    }
+
+    // 实例方法
+    /**
+     * 添加背景图
+     * @param options
+     */
+    this.addBackgroundImage = function (options) {
+      addBackgroundImage(options)
+    }
+
+    // 添加一张前景图
+    this.addForegroundImage = function (options) {
+      addForegroundImage(options)
+    }
+
+    this.clearStage = function () {
+      var stage = self.stage
+      var container = self.container
+      stage.removeAllChildren()
+      container.removeAllChildren()
+      stage.clear()
+      stage.update()
+    }
+
+    // 替换背景图
+    this.exchangeBackgroundImage = function (id, img) {
+
+      var images = self.images
+      var options = self.getOptions(id, 'images')
+
+      self.removeImage(id)
+      self.addBackgroundImage(img, options)
+    }
+
+    // 返回指定ID的图片options
+    this.getOptions = function (id, context) {
       var resultImage = null
-      this.images.forEach(function (image, index) {
+      var images = self[context]
+      images.forEach(function (image, index) {
         if (image.id === id) {
           resultImage = image
         }
@@ -71,6 +186,53 @@
 
       return resultImage
     }
+
+    // 返回所有的背景图
+    this.getAllBackgroundImages = function () {
+      return self.images
+    }
+
+    // 返回所有的前景图
+    this.getAllForegroundImages = function () {
+      return self.foregrounds
+    }
+
+    // 移除stage上的一张给定的图片
+    this.removeImage = function (id, context) {
+      var images = self.images
+      var foregrounds = self.foregrounds
+      if (context) {
+        self[context] = removeItemInArray(self[context], 'id', id)
+        switch (context) {
+          case 'images':
+            images = self[context]
+            break
+          case 'foregrounds':
+            foregrounds = self[context]
+        }
+      } else {
+        images = removeItemInArray(images, 'id', id)
+        foregrounds = removeItemInArray(foregrounds, 'id', id)
+      }
+
+      self.images = images
+      self.foregrounds = foregrounds
+
+      self.clearStage();
+      drawContainerImage(self, self.images)
+      drawForegroundImages(self, self.foregrounds)
+    }
+
+    // 移除指定ID的背景图
+    this.removeBackgroundImage = function (id) {
+      self.removeImage(id, 'images')
+    }
+
+    // 移除指定ID的前景图
+    this.removeForegroundImage = function (id) {
+      self.removeImage(id, 'foregrounds')
+    }
+
 
     var $canvas = insertCanvas(self);
     this.stage = new createjs.Stage($canvas)
@@ -88,46 +250,27 @@
     this.images = []                                 // 实例上所有的背景图
     this.foregrounds = []                            // 实例上所有的前景图
 
-    // 多张背景图
+    // 添加背景图
     if (images && Array.isArray(images) && images.length >= 1) {
-      var allOptions = null;
+      var imageOptions = null;
       images.forEach(function (image, index) {
-        // TODO: 抽取出非object的image字符串
-        allOptions = $.extend({}, option, image, {
-          id: index
-        })
-        if (allOptions) {
-          (function (option) {
-            // 添加背景图
-            addImage(self, allOptions, function (bm) {
-              self.images.push(bm)
-              drawContainerImage(self, self.images)
-              addEvents(self, bm, option)
-            })
-          }) (allOptions)
-        }
+        (function (img) {
+          addBackgroundImage(img)
+        })(image)
       })
     }
 
     // 添加前景图
     if (foregrounds && Array.isArray(foregrounds) && foregrounds.length >= 1) {
-      allOptions = null;
+      imageOptions = null;
       foregrounds.forEach(function (image, index) {
-        // TODO: 抽取出非object的image字符串
-        allOptions = $.extend({}, option, image, {
-          id: index
-        })
-        if (allOptions) {
-          // 添加背景图
-          addImage(self, allOptions, function (bm) {
-            self.foregrounds.push(bm)
-            bm.zIndex = 9999
-            drawForegroundImages(self, self.foregrounds)
-          })
-        }
+        (function (img) {
+          addForegroundImage(img)
+        })(image)
       })
     }
-
+    console.log('init images: ', this.images)
+    console.log('init foregrounds: ', this.foregrounds)
     return this;
   }
 
@@ -266,8 +409,8 @@
     var touchResult
     var initDis
     var initrotation
+
     image.on('mousedown', function (e) {
-      console.log(options)
       if (e.primary && image) {
         image.offset = {
           x: image.x - e.stageX,
@@ -276,7 +419,7 @@
         image.zIndex = 99
       }
 
-      if(options.enabledMultiTouches) {
+      if (options.enabledMultiTouches) {
         var ne = e.nativeEvent
         var targetTouches = ne.targetTouches
 
@@ -299,8 +442,8 @@
                   'x': targetTouches[1].pageX,
                   'y': targetTouches[1].pageY
                 }];
-              initDis = caculatepointsDistance(touchpoints[0], touchpoints[1]).offsetdistance;
-              initrotation = caculatepointsDistance(touchpoints[0], touchpoints[1]).angle / Math.PI * 180;
+              initDis = caculatepointsDistance(touchpoints[0], touchpoints[1]).offsetdistance
+              initrotation = caculatepointsDistance(touchpoints[0], touchpoints[1]).angle / Math.PI * 180
           }
         }
         else {
@@ -321,7 +464,7 @@
       }
 
       // 开启多指操作，才允许缩放和旋转
-      if(options && options.enabledMultiTouches) {
+      if (options && options.enabledMultiTouches) {
         var ne = e.nativeEvent
         var targetTouches = ne.targetTouches
 
@@ -395,7 +538,7 @@
     })
 
     return {
-      stage: stage,
+      stage: stage
     }
   }
 
@@ -556,10 +699,10 @@
     var stage = $container.stage
     var container = $container.container
     images = images.sort(function (x, y) {
-      return x.zIndex - y.zIndex
+      return x.bm.zIndex - y.bm.zIndex
     })
-    images.forEach(function (bm, i) {
-      container.addChild(bm)
+    images.forEach(function (img, i) {
+      container.addChild(img.bm)
     })
     stage.addChild(container)
     stage.update()
@@ -572,8 +715,8 @@
    */
   function drawForegroundImages($container, images) {
     var stage = $container.stage
-    images.forEach(function (bm, i) {
-      stage.addChild(bm)
+    images.forEach(function (img, i) {
+      stage.addChild(img.bm)
     })
     stage.update()
   }
