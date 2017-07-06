@@ -31,7 +31,10 @@
     mask: false,
 
     // 图片缩放的比例， 可以是number|'cover'|'contain'
-    scale: 1
+    scale: 1,
+
+    // 是否允许多指操作，如双指的缩放、旋转
+    enabledMultiTouches: true
   }
 
   function Scale(options) {
@@ -95,12 +98,14 @@
           id: index
         })
         if (allOptions) {
-          // 添加背景图
-          addImage(self, allOptions, function (bm) {
-            self.images.push(bm)
-            drawContainerImage(self, self.images)
-            addEvents(self, bm)
-          })
+          (function (option) {
+            // 添加背景图
+            addImage(self, allOptions, function (bm) {
+              self.images.push(bm)
+              drawContainerImage(self, self.images)
+              addEvents(self, bm, option)
+            })
+          }) (allOptions)
         }
       })
     }
@@ -134,7 +139,6 @@
     var scaledSize = image.image.width * image.scaleX
     var scaled = (scaledSize - image.scaledSize) / image.scaledSize
     image.scaledSize = scaledSize
-    console.log('image.scaleX: ', image.scaleX)
     var x2 = image.x
     var y2 = image.y
 
@@ -254,13 +258,19 @@
    * 给image添加事件
    * @param $container 父容器
    * @param image 需要操作的BitMap实例
+   * @param options 图片的配置选项
    */
-  function addEvents($container, image) {
+  function addEvents($container, image, options) {
     var stage = $container.stage
     var face = $container.face
+
+    var touchpoints
+    var newTouchpoints
+    var touchResult
+    var initDis
+    var initrotation
     image.on('mousedown', function (e) {
-      console.log('press down')
-      console.log(e)
+      console.log(options)
       if (e.primary && image) {
         image.offset = {
           x: image.x - e.stageX,
@@ -268,71 +278,110 @@
         }
         image.zIndex = 99
       }
+
+      if(options.enabledMultiTouches) {
+        var ne = e.nativeEvent
+        var targetTouches = ne.targetTouches
+
+        if (targetTouches) {
+          var touchnum = targetTouches.length;
+
+          switch (touchnum) {
+            case 1:
+              touchpoints = [{
+                'x': targetTouches[0].pageX,
+                'y': targetTouches[0].pageY
+              }];
+              break;
+            case 2:
+              touchpoints = [{
+                'x': targetTouches[0].pageX,
+                'y': targetTouches[0].pageY
+              },
+                {
+                  'x': targetTouches[1].pageX,
+                  'y': targetTouches[1].pageY
+                }];
+              initDis = caculatepointsDistance(touchpoints[0], touchpoints[1]).offsetdistance;
+              initrotation = caculatepointsDistance(touchpoints[0], touchpoints[1]).angle / Math.PI * 180;
+          }
+        }
+        else {
+          touchpoints = [{
+            'x': ne.pageX,
+            'y': ne.pageY
+          }];
+        }
+      }
     })
-    var touches = []
+
     image.on('pressmove', function (e) {
       var currentTarget = e.currentTarget
+
       if (e.primary && image && image.offset) {
         image.x = e.stageX + image.offset.x
         image.y = e.stageY + image.offset.y
       }
 
-      if(e.nativeEvent.targetTouches.length > 1) {
-        // alert(e.nativeEvent.targetTouches[0].pageX + ', '+e.nativeEvent.targetTouches[1].pageX)
-        // alert(e.stageX + ',' + e.stageY)
+      // 开启多指操作，才允许缩放和旋转
+      if(options && options.enabledMultiTouches) {
+        var ne = e.nativeEvent
+        var targetTouches = ne.targetTouches
 
-        // var touchpoints = [{
-        //   'x': e.nativeEvent.targetTouches[0].pageX,
-        //   'y': e.nativeEvent.targetTouches[0].pageY
-        // },
-        //   {
-        //     'x': e.nativeEvent.targetTouches[1].pageX,
-        //     'y': e.nativeEvent.targetTouches[1].pageY
-        //   }];
+        if (targetTouches) {
+          var touchnum = targetTouches.length;
 
-        if(e.primary) {
-          touches[0] = {
-            x: e.stageX,
-            y: e.stageY
-          }
-        } else {
-          touches[1] = {
-            x: e.stageX,
-            y: e.stageY
+          switch (touchnum) {
+            case 1:
+              newTouchpoints = [{
+                'x': targetTouches[0].pageX,
+                'y': targetTouches[0].pageY
+              }]
+              break
+            case 2:
+              newTouchpoints = [
+                {
+                  'x': targetTouches[0].pageX,
+                  'y': targetTouches[0].pageY
+                },
+                {
+                  'x': targetTouches[1].pageX,
+                  'y': targetTouches[1].pageY
+                }]
+
+              touchResult = handleTouchsByMultiPoints(newTouchpoints, touchpoints, initDis)
+              break
           }
         }
 
-        if(touches.length >= 2) {
+        touchpoints = newTouchpoints;
+
+        if (newTouchpoints && newTouchpoints.length > 1) {
           var centerPoint = {
-            x: (touches[0].x + touches[1].x) / 2,
-            y: (touches[0].y + touches[1].y) / 2
+            x: (newTouchpoints[0].x + newTouchpoints[1].x) / 2 * 2,  // * 2的原因依旧是因为canvas的画布尺寸是元素尺寸的2倍
+            y: (newTouchpoints[0].y + newTouchpoints[1].y) / 2 * 2
           }
 
-          console.log('centerpoints: ', centerPoint)
-          console.log('image: ', image)
           var sc = 0
           if (image.scaleX < 0) {
-            sc = image.scaleX * -1 + currentTarget.scaleX
+            sc = image.scaleX * -1 + touchResult.scale
             sc = Math.max(sc, 0.1)
             sc *= -1
           } else {
-            sc = image.scaleX + currentTarget.scaleX
+            sc = image.scaleX + touchResult.scale
             sc = Math.max(sc, 0.1)
           }
           var newPos = zoom(centerPoint.x, centerPoint.y, image)
-          console.log('newPos: ', newPos)
+
           image.x = newPos.x
           image.y = newPos.y
 
           image.scaleX = sc
           image.scaleY = Math.abs(sc)
-
-          image.rotation += currentTarget.rotation
+          image.rotation += touchResult.angle
         }
       }
 
-
-      // stage.update()
       drawContainerImage($container, $container.images)
       drawForegroundImages($container, $container.foregrounds)
     })
@@ -347,43 +396,6 @@
       drawContainerImage($container, $container.images)
       drawForegroundImages($container, $container.foregrounds)
     })
-
-    // face.onmove = function (e) {
-    //   if (image) {
-    //     image.x -= e.offsetx
-    //     image.y -= e.offsety
-    //   }
-    //
-    //   stage.update()
-    // }
-    //
-    // face.onrotate = function (e) {
-    //   // 两指的中点坐标
-    //   var centerPoint = {
-    //     x: (face.points[0].x + face.points[1].x) / 2,
-    //     y: (face.points[0].y + face.points[1].y) / 2
-    //   }
-    //   var sc = 0
-    //   if (image.scaleX < 0) {
-    //     sc = image.scaleX * -1 + e.scale
-    //     sc = Math.max(sc, 0.1)
-    //     sc *= -1
-    //   } else {
-    //     sc = image.scaleX + e.scale
-    //     sc = Math.max(sc, 0.1)
-    //   }
-    //
-    //   var newPos = zoom(centerPoint.x, centerPoint.y, image)
-    //   image.x = newPos.x
-    //   image.y = newPos.y
-    //
-    //   image.scaleX = sc
-    //   image.scaleY = Math.abs(sc)
-    //
-    //   image.rotation += e.angle
-    //
-    //   stage.update()
-    // }
 
     return {
       stage: stage,
@@ -568,6 +580,36 @@
       stage.addChild(bm)
     })
     stage.update()
+  }
+
+
+  function caculatepointsDistance(point1, point2) {
+    var result = {}
+    var movex = point2.x - point1.x
+    var movey = point2.y - point1.y
+    var distance = Math.sqrt(movex * movex + movey * movey)
+    var angle1,
+      angle2,
+      anglebe
+    angle1 = Math.atan2(movey, movex)
+    result.offsetx = movex
+    result.offsety = movey
+    result.offsetdistance = distance
+    result.angle = angle1
+    return result
+  }
+
+  function handleTouchsByMultiPoints(points1, points2, initDis) {
+    var result1 = caculatepointsDistance(points1[0], points1[1])
+    var result2 = caculatepointsDistance(points2[0], points2[1])
+    var dis = result2.offsetdistance - result1.offsetdistance
+    var ang = result2.angle - result1.angle
+    var sc = -dis / initDis / 2
+    var mainresult = {}
+    mainresult.angle = -ang / Math.PI * 180
+    mainresult.scale = sc
+    mainresult.points = points1
+    return mainresult
   }
 
   $.fn.extend({

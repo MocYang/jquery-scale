@@ -3,13 +3,14 @@ var canvas = $('#stage').Scale({
   images: [
     {
       url: './22.png  ',
-      position: 'center',
+      position: 'center top',
       offset: {
         x: 0,
         y: 0
       },
       mask: false,
-      scale: 0.4
+      scale: 1,
+      enabledMultiTouches: false
     },
     {
       url: './timg.jpg',
@@ -19,38 +20,41 @@ var canvas = $('#stage').Scale({
         y: 0
       },
       mask: false,
-      scale: 1
+      scale: 1,
+      enabledMultiTouches: false
     },
     {
-      url: './img4.png',
+      url: './img6.jpg',
       position: 'left center',
       offset: {
         x: 0,
         y: 0
       },
-      mask: false
+      mask: false,
+      scale: 1,
+      enabledMultiTouches: true
     }
   ],
   foregrounds: [
-    {
-      url: './img6.jpg',
-      position: 'center',
-      offset: {
-        x: 0,
-        y: 100
-      },
-      scale: 2
-    },
-    {
-      url: './timg.jpg',
-      position: 'top right',
-      offset: {
-        x: 0,
-        y: 0
-      },
-      mask: true,
-      scale: 1
-    }
+    // {
+    //   url: './img6.jpg',
+    //   position: 'center',
+    //   offset: {
+    //     x: 0,
+    //     y: 100
+    //   },
+    //   scale: 2
+    // },
+    // {
+    //   url: './timg.jpg',
+    //   position: 'top right',
+    //   offset: {
+    //     x: 0,
+    //     y: 0
+    //   },
+    //   mask: true,
+    //   scale: 1
+    // }
   ]
 })
 
