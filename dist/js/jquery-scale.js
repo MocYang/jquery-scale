@@ -74,7 +74,6 @@
 
     var $canvas = insertCanvas(self);
     this.stage = new createjs.Stage($canvas)
-    this.face = new FaceTouch('canvas')
     this.container = new createjs.Container();
     this.container.width = this.stage.canvas.width
     this.container.height = this.stage.canvas.height;
@@ -262,8 +261,6 @@
    */
   function addEvents($container, image, options) {
     var stage = $container.stage
-    var face = $container.face
-
     var touchpoints
     var newTouchpoints
     var touchResult
@@ -399,7 +396,6 @@
 
     return {
       stage: stage,
-      face: face
     }
   }
 
