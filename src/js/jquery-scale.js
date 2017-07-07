@@ -313,8 +313,18 @@
     }
 
     // 返回stage的图片数据，以base64的格式
-    this.toDataURL = function (backgroundColor) {
-      return self.stage.toDataURL(backgroundColor)
+    /**
+     *
+     * @param mime 图片的格式，支持的格式为：image/png(默认)，image/jpeg, image/webp(chrome支持)
+     * @param quality 指定图片的质量，0~1, 默认0.5
+     * @return {string} base64 url
+     */
+    this.toDataURL = function (mime, quality) {
+      var stage = self.stage
+      var canvas = stage.canvas
+      mime = mime || 'image/png'
+      quality = quality || 1
+      return canvas.toDataURL(mime, quality)
     }
 
     var $canvas = insertCanvas(self)
@@ -779,8 +789,7 @@
    * @param bm 图片 BitMap实例
    * @param scale 图片缩放的比例
    */
-  function createMask(shape, size, bm, scale, options) {
-    console.log(options)
+  function createMask(shape, size, bm, scale) {
     var containerMask = new createjs.Shape()
     containerMask.width = bm.image.width * scale.scaleX
     containerMask.height = bm.image.height * scale.scaleY
