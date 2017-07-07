@@ -638,7 +638,7 @@
 
   /**
    * 根据9个不同的位置，生成不同的x, y值
-   * @param container 偏移值的参考元素， 可以是stage，或一张图片
+   * @param container 偏移值的参考元素， 可以是stage，或一张片
    * @param position
    * @returns {{x: number, y: number}}
    */

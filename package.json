@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "uglifyjs  ./dist/js/jquery-scale.js -o ./dist/js/jquery-scale.min.js"
   },
   "repository": {
     "type": "git",
@@ -16,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/MocYang/jquery-scale/issues"
   },
-  "homepage": "https://github.com/MocYang/jquery-scale#readme"
+  "homepage": "https://github.com/MocYang/jquery-scale#readme",
+  "dependencies": {
+    "uglify-js": "^3.0.23"
+  }
 }
