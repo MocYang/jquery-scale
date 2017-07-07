@@ -142,9 +142,10 @@ $(function () {
   // getData
   var getDataBtn = $('.get-data-btn')
   getDataBtn.click(function (e) {
-    var imageSrc = canvas.toDataURL('image/png', 1)
+    var imageSrc = canvas.toDataURL('image/jpeg', 0.5)
     var image = new Image()
     image.onload = function () {
+      console.dir(image)
       $('.container').empty().append(image)
     }
     image.src = imageSrc
