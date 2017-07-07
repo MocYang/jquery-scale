@@ -1,4 +1,4 @@
-# jquery-jquery-scale.js
+# jquery-scale.js
 基于easel.js的jQuery插件，可以实现在canvas中批量操作图片。
 比如：
 * 批量添加背景图
