@@ -1,47 +1,37 @@
 <html>
 
 <head>
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <style>
     #stage {
-      width: 800px;
-      height: 800px;
-      border: 1px solid black;
-    }
-    .img__list {
-      list-style: none;
-      overflow: hidden;
       width: 300px;
-      height: 195px;
-    }
-    .img__item {
-      float: left;
-      width: 20%;
-      height: 80%;
-      padding-top: 20px;
-      padding-left: 20px;
-    }
-    .img {
-      width: 100%;
-      height: 100%;
+      height: 300px;
+      border: 1px solid black;
     }
   </style>
 </head>
 
 <body>
 <div class="wrapper" id="stage"></div>
-
-<ul class="img__list">
-  <li class="img__item"><img class="img" src="./img1.png" alt=""></li>
-  <li class="img__item"><img class="img" src="./img2.png" alt=""></li>
-  <li class="img__item"><img class="img" src="./img3.png" alt=""></li>
-  <li class="img__item"><img class="img" src="./img4.png" alt=""></li>
+<ul>
+  <li><button class="add-back">添加背景图</button></li>
+  <li><button class="add-fore">添加前景图</button></li>
+  <li><button class="clear">清空stage</button></li>
+  <li><input class="remove-back" type="text" placeholder="填写图片的ID"><button class="remove-back-btn">移除该背景图</button></li>
+  <li><input class="remove-fore" type="text" placeholder="填写图片的ID"><button class="remove-fore-btn">移除该前景图</button></li>
+  <li><input class="remove" type="text" placeholder="填写图片的ID"><button class="remove-btn">移除一张图</button></li>
+  <li><input class="exchange-back" type="text" placeholder="填写图片的ID"><button class="exchange-back-btn">替换某张背景图</button></li>
+  <li><input class="exchange-fore" type="text" placeholder="填写图片的ID"><button class="exchange-fore-btn">替换某张前景图</button></li>
+  <li><button class="get-data-btn">获取stage的image data</button></li>
 </ul>
+<div class="container">
 
+</div>
 <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
-<script src="easeljs.min.js"></script>
-<script src="scale.js"></script>
-<script src="app.js?2"></script>
+<script src="./src/js/easeljs.min.js"></script>
+<script src="./src/js/jquery-scale.min.js"></script>
+<script src="./examples/app.js?2"></script>
 </body>
 
 </html>

@@ -138,7 +138,7 @@ example:
 ## methods
 ### addBackgroundImage(*options*)
 添加一张背景图。默认显示在所有背景图之上，如果存在重叠。
-- param *options* {*string*|*object*} options可以是图片*URL*，如： *'./examples/images/img6.jpg'*，也可以是image-options对象。必选。
+- param **options** {*string*|*object*} options可以是图片*URL*，如： *'./examples/images/img6.jpg'*，也可以是image-options对象。必选。
 
 example:
 ```javascript
@@ -162,7 +162,7 @@ example:
 
 ### addForegroundImage(*options*)
 添加一张前景图。默认显示在所有图片之上，如果存在重叠。
-- param *options* {*string*|*object*} options可以是图片*URL*，如： *'./examples/images/img6.jpg'*，也可以是image-options对象。必选。
+- param **options** {*string*|*object*} options可以是图片*URL*，如： *'./examples/images/img6.jpg'*，也可以是image-options对象。必选。
 
 example:
 ```javascript
