@@ -23,16 +23,16 @@
 ...
 ...
 <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
-<script src="./dist/js/easeljs.min.js"></script>
-<script src="./dist/js/jquery-scale.js"></script>
-<script src="./examples/app.js"></script>
+<script src="./src/js/easeljs.min.js"></script>
+<script src="./src/js/jquery-scale.js"></script>
+<script src="./app.js"></script>
 ...
 ```
 ```javascript
 var canvas = $('#stage').Scale({
   images: [
     {
-      url: './examples/images/22.png  ',
+      url: './images/22.png  ',
       position: 'center top',
       offset: {
         x: 0,
@@ -43,7 +43,7 @@ var canvas = $('#stage').Scale({
       enabledMultiTouches: false
     },
     {
-      url: './examples/images/timg.jpg',
+      url: './images/timg.jpg',
       position: 'center',
       offset: {
         x: 0,
@@ -54,7 +54,7 @@ var canvas = $('#stage').Scale({
       enabledMultiTouches: false
     },
     {
-      url: './examples/images/img6.jpg',
+      url: './images/img6.jpg',
       position: 'left center',
       offset: {
         x: 0,
@@ -77,7 +77,7 @@ example:
     images: [
       {
         id: 'img1',
-        url: './examples/images/22.png  ',
+        url: './images/22.png  ',
         position: 'center top',
         offset: {
           x: 0,
@@ -89,7 +89,7 @@ example:
       },
       {
         id: 'img2',
-        url: './examples/images/timg.jpg',
+        url: './images/timg.jpg',
         position: 'center',
         offset: {
           x: 0,
@@ -102,7 +102,7 @@ example:
     ],
     /*foregrounds: [
       {
-        url: './examples/images/img6.jpg',
+        url: './images/img6.jpg',
         position: 'center',
         offset: {
           x: 0,
@@ -111,7 +111,7 @@ example:
         scale: 2
       },
       {
-        url: './examples/images/timg.jpg',
+        url: './images/timg.jpg',
         position: 'top right',
         offset: {
           x: 0,
@@ -120,7 +120,7 @@ example:
         scale: 1
       }
     ],*/
-    foregrounds: ['./examples/images/timg.jpg']
+    foregrounds: ['./images/timg.jpg']
   })
 ```
 
@@ -138,7 +138,7 @@ example:
 ## methods
 ### addBackgroundImage(*options*)
 添加一张背景图。默认显示在所有背景图之上，如果存在重叠。
-- param **options** {*string*|*object*} options可以是图片*URL*，如： *'./examples/images/img6.jpg'*，也可以是image-options对象。必选。
+- param *options* {*string*|*object*} options可以是图片*URL*，如： *'./images/img6.jpg'*，也可以是image-options对象。必选。
 
 example:
 ```javascript
@@ -146,7 +146,7 @@ example:
     addBackgroundBtn.click(function(e) {
         canvas.addBackgroundImage({
           id: '1111111',
-          url: './examples/images/img6.jpg',
+          url: './images/img6.jpg',
           position: 'top right',
           mask: true
         })
@@ -156,13 +156,13 @@ example:
 ```javascript
     var addBackgroundBtn = $('.add-back')
     addBackgroundBtn.click(function(e) {
-        canvas.addBackgroundImage('./examples/images/img6.jpg')
+        canvas.addBackgroundImage('./images/img6.jpg')
     })
 ```
 
 ### addForegroundImage(*options*)
 添加一张前景图。默认显示在所有图片之上，如果存在重叠。
-- param **options** {*string*|*object*} options可以是图片*URL*，如： *'./examples/images/img6.jpg'*，也可以是image-options对象。必选。
+- param *options* {*string*|*object*} options可以是图片*URL*，如： *'./images/img6.jpg'*，也可以是image-options对象。必选。
 
 example:
 ```javascript
@@ -170,7 +170,7 @@ example:
     addForegroundImageBtn.click(function(e) {
         canvas.addForegroundImage({
           id: '1111111',
-          url: './examples/images/img6.jpg',
+          url: './images/img6.jpg',
           position: 'top right',
           scale: 'contain'
         })
@@ -180,7 +180,7 @@ example:
 ```javascript
     var addForegroundImageBtn = $('.add-back')
     addForegroundImageBtn.click(function(e) {
-        canvas.addForegroundImage('./examples/images/img6.jpg')
+        canvas.addForegroundImage('./images/img6.jpg')
     })
 ```
 ### clearStage()
@@ -202,7 +202,7 @@ example:
   var exchangeBackInput = $('.exchange-back')
   var exchangeBackBtn = $('.exchange-back-btn')
   exchangeBackBtn.click(function(e) {
-    canvas.exchangeBackgroundImage(exchangeBackInput.val().trim(), './examples/images/img6.jpg')
+    canvas.exchangeBackgroundImage(exchangeBackInput.val().trim(), './images/img6.jpg')
   })
 ```
 ```javascript
@@ -211,7 +211,7 @@ example:
   exchangeBackBtn.click(function(e) {
     canvas.exchangeBackgroundImage(exchangeBackInput.val().trim(), {
       id: 'img6',
-      url: './examples/images/img6.jpg',
+      url: './images/img6.jpg',
       position: 'top center',
       scale: 'contain',
       mask: true
@@ -231,7 +231,7 @@ example:
   var exchangeForeInput = $('.exchange-back')
   var exchangeForeBtn = $('.exchange-back-btn')
   exchangeForeBtn.click(function(e) {
-    canvas.exchangeForegroundImage(exchangeForeInput.val().trim(), './examples/images/img6.jpg')
+    canvas.exchangeForegroundImage(exchangeForeInput.val().trim(), './images/img6.jpg')
   })
 ```
 ```javascript
@@ -240,7 +240,7 @@ example:
   exchangeForeBtn.click(function(e) {
     canvas.exchangeForegroundImage(exchangeForeInput.val().trim(), {
       id: 'img6',
-      url: './examples/images/img6.jpg',
+      url: './images/img6.jpg',
       position: 'top center',
       scale: 'contain',
       mask: true

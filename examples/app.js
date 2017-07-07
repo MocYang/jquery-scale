@@ -1,65 +1,65 @@
 $(function () {
   var canvas = $('#stage').Scale({
-    images: [
-      {
-        id: 'img1',
-        url: './examples/images/22.png  ',
-        position: 'center bottom',
-        offset: {
-          x: 1,
-          y: 1
+      images: [
+        {
+          id: 'img1',
+          url: './images/22.png  ',
+          position: 'center bottom',
+          offset: {
+            x: 1,
+            y: 1
+          },
+          mask: false,
+          scale: 1
         },
-        mask: false,
-        scale: 1
-      },
-      {
-        id: 'img2',
-        url: './examples/images/timg.jpg',
-        position: 'center',
-        offset: {
-          x: 2,
-          y: 2
+        {
+          id: 'img2',
+          url: './images/timg.jpg',
+          position: 'center',
+          offset: {
+            x: 2,
+            y: 2
+          },
+          mask: false,
+          scale: 1
         },
-        mask: false,
-        scale: 1
-      }
-      /*{
-       id: 'img3',
-       url: './examples/images/img6.jpg',
-       position: 'left center',
-       offset: {
-       x: 0,
-       y: 0
-       },
-       mask: false,
-       scale: 0,
-       enabledMultiTouches: true
-       }*/
-    ],
-    foregrounds: [
-      // {
-      //   id: 'img3',
-      //   url: './examples/images/img6.jpg',
-      //   position: 'center',
-      //   offset: {
-      //     x: 0,
-      //     y: 100
-      //   },
-      //   scale: 2
-      // },
-      // {
-      //   id: 'img2',
-      //   url: './examples/images/timg.jpg',
-      //   position: 'top right',
-      //   offset: {
-      //     x: 0,
-      //     y: 0
-      //   },
-      //   scale: 1
-      // }
-    ]
-    // foregrounds: ['./examples/images/img6.jpg']
-  }
+        {
+          id: 'img3',
+          url: './images/img6.jpg',
+          position: 'left center',
+          offset: {
+            x: 0,
+            y: 0
+          },
+          mask: false,
+          scale: 1,
+          enabledMultiTouches: true
+        }
+      ],
+      foregrounds: [
+        // {
+        //   id: 'img3',
+        //   url: './images/img6.jpg',
+        //   position: 'center',
+        //   offset: {
+        //     x: 0,
+        //     y: 100
+        //   },
+        //   scale: 2
+        // },
+        // {
+        //   id: 'img2',
+        //   url: './images/timg.jpg',
+        //   position: 'top right',
+        //   offset: {
+        //     x: 0,
+        //     y: 0
+        //   },
+        //   scale: 1
+        // }
+      ]
+      // foregrounds: ['./examples/images/img6.jpg']
+    }
   )
 
   // 添加背景
@@ -67,7 +67,7 @@ $(function () {
   addBackgroundBtn.click(function (e) {
     canvas.addBackgroundImage({
       id: 'img6',
-      url: './examples/images/img6.jpg',
+      url: './images/img6.jpg',
       position: 'top right',
       scale: 1
     })
@@ -78,12 +78,11 @@ $(function () {
   addForegroundBtn.click(function (e) {
     canvas.addForegroundImage({
       id: '1111111',
-      url: './examples/images/img6.jpg',
+      url: './images/img6.jpg',
       position: 'top right',
       scale: 1
     })
   })
-
 
   // 移除一张背景
   var removeBackInput = $('.remove-back')
@@ -110,7 +109,7 @@ $(function () {
   var exchangeBackInput = $('.exchange-back')
   var exchangeBackBtn = $('.exchange-back-btn')
   exchangeBackBtn.click(function (e) {
-    canvas.exchangeBackgroundImage(exchangeBackInput.val().trim(), './examples/images/img6.jpg')
+    canvas.exchangeBackgroundImage(exchangeBackInput.val().trim(), './images/img6.jpg')
     // canvas.exchangeBackgroundImage(exchangeBackInput.val().trim(), {
     //   id: 'img6',
     //   url: './examples/images/img6.jpg',
@@ -124,24 +123,23 @@ $(function () {
   var exchangeForeInput = $('.exchange-fore')
   var exchangeForeBtn = $('.exchange-fore-btn')
   exchangeForeBtn.click(function (e) {
-    canvas.exchangeForegroundImage(exchangeForeInput.val().trim(), './examples/images/img6.jpg')
+    canvas.exchangeForegroundImage(exchangeForeInput.val().trim(), './images/img6.jpg')
   })
 
   // 清空stage
   var clearBtn = $('.clear')
-  clearBtn.click(function(e) {
+  clearBtn.click(function (e) {
     canvas.clearStage()
   })
 
   // getData
   var getDataBtn = $('.get-data-btn')
-  getDataBtn.click(function(e) {
-   var imageSrc =  canvas.toDataURL('#cc0090', 'image/jpg')
+  getDataBtn.click(function (e) {
+    var imageSrc = canvas.toDataURL('#cc0090', 'image/jpg')
     var image = new Image()
     image.onload = function () {
       $('.container').empty().append(image)
     }
     image.src = imageSrc
   })
-
 })
