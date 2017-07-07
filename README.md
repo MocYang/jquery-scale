@@ -7,8 +7,9 @@
 * 支持移动端的touch操作(缩放，旋转，移动)
 * 支持方便的图片定位（left，right，top，bottom，center等）
 * 支持图片mask
-* 方便的canvas数据导出 （待完成）
-* 简单的图片替换       （待完成） 
+* 方便的canvas数据导出
+* 简单的图片替换
+* 处理了canvas中图片会模糊的问题 
 * ...
 
 ## 依赖
@@ -182,6 +183,81 @@ example:
         canvas.addForegroundImage('./examples/images/img6.jpg')
     })
 ```
+### clearStage()
+清空stage。移除了stage和container里的所有元素。
+
+example:
+```javascript
+  canvas.clearStage()
+```
+
+### exchangeBackgroundImage(*id*, *img*)
+使用给定的*img*替换指定ID的图片。如果指定的ID不存在，则不执行替换。
+ 
+- param **id** {*string*|*number*} 图片的ID。必选
+- param **img** {*string*|*object*} 图片的URL/配置对象。如果提供图片的URL，则保留目标图片的属性（比如移动的位置，旋转的角度等）。如果指定图片的配置对象，则使用该配置项，忽视目标图片的所有属性。必选
+
+example: 
+```javascript
+  var exchangeBackInput = $('.exchange-back')
+  var exchangeBackBtn = $('.exchange-back-btn')
+  exchangeBackBtn.click(function(e) {
+    canvas.exchangeBackgroundImage(exchangeBackInput.val().trim(), './examples/images/img6.jpg')
+  })
+```
+```javascript
+  var exchangeBackInput = $('.exchange-back')
+  var exchangeBackBtn = $('.exchange-back-btn')
+  exchangeBackBtn.click(function(e) {
+    canvas.exchangeBackgroundImage(exchangeBackInput.val().trim(), {
+      id: 'img6',
+      url: './examples/images/img6.jpg',
+      position: 'top center',
+      scale: 'contain',
+      mask: true
+    })
+  })
+```
+
+
+### exchangeForegroundImage(*id*, *img*)
+使用给定的*img*替换指定ID的前景图片。如果指定的ID不存在，则不执行替换。
+ 
+- param **id** {*string*|*number*} 图片的ID。必选
+- param **img** {*string*|*object*} 图片的URL/配置对象。如果提供图片的URL，则保留目标图片的属性（比如移动的位置，旋转的角度等）。如果指定图片的配置对象，则使用该配置项，忽视目标图片的所有属性。必选
+
+example: 
+```javascript
+  var exchangeForeInput = $('.exchange-back')
+  var exchangeForeBtn = $('.exchange-back-btn')
+  exchangeForeBtn.click(function(e) {
+    canvas.exchangeForegroundImage(exchangeForeInput.val().trim(), './examples/images/img6.jpg')
+  })
+```
+```javascript
+  var exchangeForeInput = $('.exchange-back')
+  var exchangeForeBtn = $('.exchange-back-btn')
+  exchangeForeBtn.click(function(e) {
+    canvas.exchangeForegroundImage(exchangeForeInput.val().trim(), {
+      id: 'img6',
+      url: './examples/images/img6.jpg',
+      position: 'top center',
+      scale: 'contain',
+      mask: true
+    })
+  })
+```
+
+### getOptions(*id*, *context*)
+获取context(前景/背景)中指定ID的图片options
+- param **id** {*string*|*number*} 图片的ID。必选。
+- param **context** {*string*} 指定是前景还是背景中的图片。可取的值为：前景 *'images'* ,背景 *'foregrounds'*。必选
+
+example:
+```javascript
+// 获取所有背景图片中，ID值为'img1'的图片的配置项
+  canvas.getOptions('img1', 'images')
+```
 
 ### removeImage(id [, context])
 在stage上移除给定ID的图片。如果前景和背景有多张图有相同的ID，则所有与给定ID匹配的图片都会被移除。注意：应该始终保持所有图片具有唯一的ID。
@@ -196,6 +272,21 @@ example:
   removeBtn.click(function(e) {
     canvas.removeImage(removeInput.val().trim())
   })
+```
+### getAllBackgroundImages()
+返回当前stage中的所有的背景图，每一个背景图都是一个scale对象
+
+example:
+```javascript
+  canvas.getAllBackgroundImages()
+```
+
+### getAllForegroundImages()
+返回当前stage中的所有的前景图，每一个前景图都是一个scale对象
+
+example:
+```javascript
+  canvas.getAllForegroundImages()
 ```
 
 
@@ -228,3 +319,24 @@ example:
     canvas.removeForegroundImage(removeForeInput.val().trim())
   })
 ```
+
+### toDataURL([*backgroundColor*])
+返回以stage内容生成的base64格式的URL。可以作为img的*src*属性值，或者提交到服务器。默认的图片格式为：*image/png*。注意：导出的图片大小为指定的canvas容器的*css*尺寸的两倍。
+- param **backgroundColor** {*string*} 指定生成的图片的背景颜色。可选。
+
+example: 
+```javascript
+  var getDataBtn = $('.get-data-btn')
+  getDataBtn.click(function(e) {
+   var imageSrc =  canvas.toDataURL('#cc0090')
+    var image = new Image()
+    image.onload = function () {
+      $('.container').empty().append(image)
+    }
+    image.src = imageSrc
+  })
+```
+
+
+
+

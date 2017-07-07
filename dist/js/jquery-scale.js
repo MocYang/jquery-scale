@@ -36,6 +36,8 @@
     // 是否允许多指操作，如双指的缩放、旋转
     enabledMultiTouches: true
   }
+  // 维护全局的ID，保持所有图片的ID唯一
+  var id = 1
 
   function Scale(options) {
 
@@ -46,7 +48,7 @@
      * 根据给定的图片options和bm，生成scale的专用对象
      * @param options image的配置项集合
      * @param bm      image对应的BigMap实例
-     * @return {object}        返回一个Scale专用的对象
+     * @return {object}        返回一个scale专用的对象
      */
     function createScaleObj(options, bm) {
       return $.extend({}, options, {
@@ -55,71 +57,108 @@
     }
 
     /**
+     * 使用已有的scale对象和新的配置对象，组合得到新的scale对象
+     * @param options {string|object} 替换/新建图片时，图片的URL/配置对象
+     * @param imageOptions 图片的scale对象
+     * @param exitOptions  目标图片的scale对象
+     * @param bm           使用新图片的URL生成的BitMap实例
+     * @return {*}
+     */
+    function combineScaleObjectWidthOld(options, imageOptions, exitOptions, bm) {
+      var newScaleObj = null
+      if (exitOptions && typeof options === 'string') {
+        var exitBmCopy = exitOptions.bm;
+        delete exitBmCopy.image
+        delete exitBmCopy.regX
+        delete exitBmCopy.regY
+        delete exitBmCopy.x
+        delete exitBmCopy.y
+
+        bm = $.extend(true, {}, bm, exitBmCopy)
+        newScaleObj = createScaleObj(imageOptions, bm)
+      } else {
+        newScaleObj = createScaleObj(imageOptions, bm)
+      }
+
+      return newScaleObj
+    }
+
+    /**
+     * 生成图片的配置对象
+     * @param options {string|object}
+     * @param exitOptions {object} 执行替换时，目标图片的配置对象
+     * @return {*}
+     */
+    function generateOptions(options, exitOptions) {
+      var index = id++
+      var imageOptions = null
+      if (typeof options === 'string') {
+        imageOptions = $.extend({}, option, {
+          id: index
+        }, {
+          url: options
+        })
+
+        // 替换图片时，如果只传入图片URL则使用目标图片的配置项来拓展新的配置项
+        if (exitOptions) {
+          imageOptions = extendExitOptions(imageOptions, exitOptions)
+        }
+      } else if (typeof options === 'object') {
+        imageOptions = $.extend({}, option, {
+          id: index
+        }, options)
+      }
+
+      return imageOptions
+    }
+
+    /**
+     *
+     * @param imageOptions
+     * @param exitOptions
+     * @return {void|*}
+     */
+    function extendExitOptions(imageOptions, exitOptions) {
+      var newOptions
+      var oldOptionsCopy = $.extend(true, {}, exitOptions)
+      delete oldOptionsCopy.url
+      delete oldOptionsCopy.id
+      delete oldOptionsCopy.bm
+      newOptions = $.extend(true, {}, imageOptions, oldOptionsCopy)
+      return newOptions
+    }
+
+    /**
      * 添加背景图
      * @param options 一张图片的URL，或image-options对象
      * @param exitOptions
      */
     function addBackgroundImage(options, exitOptions) {
-      var index = self.images.length
-      var imageOptions
-      if (typeof options === 'string') {
-        imageOptions = $.extend({}, option, {
-          id: index
-        }, {
-          url: options
+      var imageOptions = generateOptions(options, exitOptions)
+      if (imageOptions) {
+        addImage(self, imageOptions, function (bm) {
+          var newScaleObj = combineScaleObjectWidthOld(options, imageOptions, exitOptions, bm)
+          self.images.push(newScaleObj)
+          drawContainerImage(self, self.images)
+          addEvents(self, newScaleObj.bm, newScaleObj)
         })
-        if (imageOptions) {
-          addImage(self, imageOptions, function (bm) {
-            self.images.push(createScaleObj(imageOptions, bm))
-            drawContainerImage(self, self.images)
-            addEvents(self, bm, imageOptions)
-          })
-        }
-      } else if (typeof options === 'object') {
-        imageOptions = $.extend({}, option, {
-          id: index
-        }, options)
-        if (imageOptions) {
-          addImage(self, imageOptions, function (bm) {
-            self.images.push(createScaleObj(imageOptions, bm))
-            drawContainerImage(self, self.images)
-            addEvents(self, bm, imageOptions)
-          })
-        }
       }
     }
 
     /**
      * 添加前景图
-     * @param options
+     * @param options {string|object} 图片URL或者图片的配置对象
+     * @param exitOptions  {object}   图片的配置对象
      */
-    function addForegroundImage(options) {
-      var index = self.foregrounds.length
-      var imageOptions
-      if (typeof options === 'string') {
-        imageOptions = $.extend({}, option, {
-          id: index
-        }, {
-          url: options
+    function addForegroundImage(options, exitOptions) {
+      var imageOptions = generateOptions(options, exitOptions)
+      if (imageOptions) {
+        addImage(self, imageOptions, function (bm) {
+          var newScaleObj = combineScaleObjectWidthOld(options, imageOptions, exitOptions, bm)
+          self.foregrounds.push(newScaleObj)
+          bm.zIndex = 9999
+          drawForegroundImages(self, self.foregrounds)
         })
-        if (imageOptions) {
-          addImage(self, imageOptions, function (bm) {
-            self.foregrounds.push(createScaleObj(imageOptions, bm))
-            bm.zIndex = 9999
-            drawForegroundImages(self, self.foregrounds)
-          })
-        }
-      } else if (typeof options === 'object') {
-        imageOptions = $.extend({}, option, {
-          id: index
-        }, options)
-        if (imageOptions) {
-          addImage(self, imageOptions, function (bm) {
-            self.foregrounds.push(createScaleObj(imageOptions, bm))
-            bm.zIndex = 9999
-            drawForegroundImages(self, self.foregrounds)
-          })
-        }
       }
     }
 
@@ -132,7 +171,10 @@
      */
     function removeItemInArray(array, key, value) {
       for (var i = 0; i < array.length; i++) {
-        if (value === array[i][key]) {
+        if (value == array[i][key]) {
+          if (array[i].bm) {
+            array[i].bm.removeAllEventListeners()
+          }
           array = array.slice(0, i).concat(array.slice(i + 1))
           i--;
         }
@@ -141,20 +183,18 @@
       return array
     }
 
-    // 实例方法
-    /**
-     * 添加背景图
-     * @param options
-     */
+    /* 实例方法 */
+    // 添加背景图
     this.addBackgroundImage = function (options) {
       addBackgroundImage(options)
     }
 
-    // 添加一张前景图
+    // 添加前景图
     this.addForegroundImage = function (options) {
       addForegroundImage(options)
     }
 
+    // 清空stage
     this.clearStage = function () {
       var stage = self.stage
       var container = self.container
@@ -162,16 +202,27 @@
       container.removeAllChildren()
       stage.clear()
       stage.update()
+
+      self.images.length = 0
+      self.foregrounds.length = 0
     }
 
     // 替换背景图
     this.exchangeBackgroundImage = function (id, img) {
-
-      var images = self.images
       var options = self.getOptions(id, 'images')
+      if (options) {
+        self.removeBackgroundImage(id)
+        addBackgroundImage(img, options)
+      }
+    }
 
-      self.removeImage(id)
-      self.addBackgroundImage(img, options)
+    // 替换前景图
+    this.exchangeForegroundImage = function (id, img) {
+      var options = self.getOptions(id, 'foregrounds')
+      if (options) {
+        self.removeForegroundImage(id)
+        addForegroundImage(img, options)
+      }
     }
 
     // 返回指定ID的图片options
@@ -179,7 +230,7 @@
       var resultImage = null
       var images = self[context]
       images.forEach(function (image, index) {
-        if (image.id === id) {
+        if (image.id == id) {
           resultImage = image
         }
       })
@@ -199,26 +250,28 @@
 
     // 移除stage上的一张给定的图片
     this.removeImage = function (id, context) {
-      var images = self.images
-      var foregrounds = self.foregrounds
+      var images = self.images.slice()
+      var foregrounds = self.foregrounds.slice()
       if (context) {
-        self[context] = removeItemInArray(self[context], 'id', id)
+        var container = self[context].slice()
+        container = removeItemInArray(container, 'id', id)
         switch (context) {
           case 'images':
-            images = self[context]
+            images = container
             break
           case 'foregrounds':
-            foregrounds = self[context]
+            foregrounds = container
         }
       } else {
         images = removeItemInArray(images, 'id', id)
         foregrounds = removeItemInArray(foregrounds, 'id', id)
       }
 
-      self.images = images
-      self.foregrounds = foregrounds
-
       self.clearStage();
+
+      self.images = images.slice()
+      self.foregrounds = foregrounds.slice()
+
       drawContainerImage(self, self.images)
       drawForegroundImages(self, self.foregrounds)
     }
@@ -233,14 +286,18 @@
       self.removeImage(id, 'foregrounds')
     }
 
+    // 返回stage的图片数据，以base64的格式
+    this.toDataURL = function (backgroundColor) {
+      return self.stage.toDataURL(backgroundColor)
+    }
 
-    var $canvas = insertCanvas(self);
+    var $canvas = insertCanvas(self)
     this.stage = new createjs.Stage($canvas)
-    this.container = new createjs.Container();
+    this.container = new createjs.Container()
     this.container.width = this.stage.canvas.width
-    this.container.height = this.stage.canvas.height;
-    this.stage.enableMouseOver(20);
-    createjs.Touch.enable(this.stage);
+    this.container.height = this.stage.canvas.height
+    this.stage.enableMouseOver(20)
+    createjs.Touch.enable(this.stage)
     createjs.Ticker.addEventListener('tick', function () {
       self.stage.update()
     })
@@ -253,7 +310,7 @@
     // 添加背景图
     if (images && Array.isArray(images) && images.length >= 1) {
       var imageOptions = null;
-      images.forEach(function (image, index) {
+      images.forEach(function (image) {
         (function (img) {
           addBackgroundImage(img)
         })(image)
@@ -263,14 +320,13 @@
     // 添加前景图
     if (foregrounds && Array.isArray(foregrounds) && foregrounds.length >= 1) {
       imageOptions = null;
-      foregrounds.forEach(function (image, index) {
+      foregrounds.forEach(function (image) {
         (function (img) {
           addForegroundImage(img)
         })(image)
       })
     }
-    console.log('init images: ', this.images)
-    console.log('init foregrounds: ', this.foregrounds)
+
     return this;
   }
 
@@ -409,6 +465,8 @@
     var touchResult
     var initDis
     var initrotation
+    var isMultiTouch = false
+    var now = new Date().getTime()
 
     image.on('mousedown', function (e) {
       if (e.primary && image) {
@@ -424,7 +482,7 @@
         var targetTouches = ne.targetTouches
 
         if (targetTouches) {
-          var touchnum = targetTouches.length;
+          var touchnum = targetTouches.length
 
           switch (touchnum) {
             case 1:
@@ -432,7 +490,7 @@
                 'x': targetTouches[0].pageX,
                 'y': targetTouches[0].pageY
               }];
-              break;
+              break
             case 2:
               touchpoints = [{
                 'x': targetTouches[0].pageX,
@@ -444,6 +502,7 @@
                 }];
               initDis = caculatepointsDistance(touchpoints[0], touchpoints[1]).offsetdistance
               initrotation = caculatepointsDistance(touchpoints[0], touchpoints[1]).angle / Math.PI * 180
+              isMultiTouch = true
           }
         }
         else {
@@ -456,69 +515,68 @@
     })
 
     image.on('pressmove', function (e) {
-      var currentTarget = e.currentTarget
+      if (!isMultiTouch) {
+        if (e.primary && image && image.offset) {
+          image.x = e.stageX + image.offset.x
+          image.y = e.stageY + image.offset.y
+        }
+      } else {
+        // 开启多指操作，才允许缩放和旋转
+        if (options && options.enabledMultiTouches) {
+          var ne = e.nativeEvent
+          var targetTouches = ne.targetTouches
+          if (targetTouches) {
+            var touchnum = targetTouches.length;
 
-      if (e.primary && image && image.offset) {
-        image.x = e.stageX + image.offset.x
-        image.y = e.stageY + image.offset.y
-      }
-
-      // 开启多指操作，才允许缩放和旋转
-      if (options && options.enabledMultiTouches) {
-        var ne = e.nativeEvent
-        var targetTouches = ne.targetTouches
-
-        if (targetTouches) {
-          var touchnum = targetTouches.length;
-
-          switch (touchnum) {
-            case 1:
-              newTouchpoints = [{
-                'x': targetTouches[0].pageX,
-                'y': targetTouches[0].pageY
-              }]
-              break
-            case 2:
-              newTouchpoints = [
-                {
+            switch (touchnum) {
+              case 1:
+                newTouchpoints = [{
                   'x': targetTouches[0].pageX,
                   'y': targetTouches[0].pageY
-                },
-                {
-                  'x': targetTouches[1].pageX,
-                  'y': targetTouches[1].pageY
                 }]
+                break
+              case 2:
+                newTouchpoints = [
+                  {
+                    'x': targetTouches[0].pageX,
+                    'y': targetTouches[0].pageY
+                  },
+                  {
+                    'x': targetTouches[1].pageX,
+                    'y': targetTouches[1].pageY
+                  }]
 
-              touchResult = handleTouchsByMultiPoints(newTouchpoints, touchpoints, initDis)
-              break
+                touchResult = handleTouchsByMultiPoints(newTouchpoints, touchpoints, initDis)
+                break
+            }
           }
-        }
 
-        touchpoints = newTouchpoints;
+          touchpoints = newTouchpoints;
 
-        if (newTouchpoints && newTouchpoints.length > 1) {
-          var centerPoint = {
-            x: (newTouchpoints[0].x + newTouchpoints[1].x) / 2 * 2,  // * 2的原因依旧是因为canvas的画布尺寸是元素尺寸的2倍
-            y: (newTouchpoints[0].y + newTouchpoints[1].y) / 2 * 2
+          if (newTouchpoints && newTouchpoints.length > 1) {
+            var centerPoint = {
+              x: (newTouchpoints[0].x + newTouchpoints[1].x) / 2 * 2,  // * 2的原因依旧是因为canvas的画布尺寸是元素尺寸的2倍
+              y: (newTouchpoints[0].y + newTouchpoints[1].y) / 2 * 2
+            }
+
+            var sc = 0
+            if (image.scaleX < 0) {
+              sc = image.scaleX * -1 + touchResult.scale
+              sc = Math.max(sc, 0.1)
+              sc *= -1
+            } else {
+              sc = image.scaleX + touchResult.scale
+              sc = Math.max(sc, 0.1)
+            }
+            var newPos = zoom(centerPoint.x, centerPoint.y, image)
+
+            image.x = newPos.x
+            image.y = newPos.y
+
+            image.scaleX = sc
+            image.scaleY = Math.abs(sc)
+            image.rotation += touchResult.angle
           }
-
-          var sc = 0
-          if (image.scaleX < 0) {
-            sc = image.scaleX * -1 + touchResult.scale
-            sc = Math.max(sc, 0.1)
-            sc *= -1
-          } else {
-            sc = image.scaleX + touchResult.scale
-            sc = Math.max(sc, 0.1)
-          }
-          var newPos = zoom(centerPoint.x, centerPoint.y, image)
-
-          image.x = newPos.x
-          image.y = newPos.y
-
-          image.scaleX = sc
-          image.scaleY = Math.abs(sc)
-          image.rotation += touchResult.angle
         }
       }
 
@@ -532,7 +590,10 @@
         image.zIndex = 1
       }
 
-      // stage.update()
+      var targetTouches =  e.nativeEvent.targetTouches
+      isMultiTouch = targetTouches && targetTouches.length === 1
+
+      // isMultiTouch = false
       drawContainerImage($container, $container.images)
       drawForegroundImages($container, $container.foregrounds)
     })
@@ -654,6 +715,9 @@
   function getScale($container, image, scale) {
     var scaleX = 1
     var scaleY = 1
+    var containerWidth = $container.stage.canvas.width
+    var containerHeight = $container.stage.canvas.height
+
     // 直接使用指定的缩放比例，等比缩放
     if (scale && typeof scale === 'number') {
       scaleX = scale
@@ -664,22 +728,22 @@
       if (scale === 'contain') {
         // 'contain'按较长边等比缩放
         if (image.width >= image.height) {
-          scaleX = $container.stage.canvas.width / image.width
-          scaleY = $container.stage.canvas.width / image.width
+          scaleX = containerWidth / image.width
+          scaleY = containerWidth / image.width
         } else {
-          scaleX = $container.stage.canvas.height / image.height
-          scaleY = $container.stage.canvas.height / image.height
+          scaleX = containerHeight / image.height
+          scaleY = containerHeight / image.height
         }
 
         // 'cover'--表示将背景图像等比缩放到完全覆盖容器，图像有可能超出容器。
       } else if (scale === 'cover') {
         // 'cover'按较短边缩放
         if (image.width >= image.height) {
-          scaleX = $container.stage.canvas.height / image.height
-          scaleY = $container.stage.canvas.height / image.height
+          scaleX = containerHeight / image.height
+          scaleY = containerHeight / image.height
         } else {
-          scaleX = $container.stage.canvas.width / image.width
-          scaleY = $container.stage.canvas.width / image.width
+          scaleX = containerWidth / image.width
+          scaleY = containerWidth / image.width
         }
       }
     }
@@ -720,7 +784,6 @@
     })
     stage.update()
   }
-
 
   function caculatepointsDistance(point1, point2) {
     var result = {}
