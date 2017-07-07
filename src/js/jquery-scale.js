@@ -30,6 +30,17 @@
     // 是否添加mask
     mask: false,
 
+    // mask的形状，只支持矩形'rect',圆形'circle'
+    maskShape: 'rect',
+
+    // maskSize
+    /*
+     maskShape为'circle'时，maskSize: { x: 0, y: 0, radius: 100 }
+     */
+    maskSize: {
+      w: 200,
+      h: 200
+    },
     // 图片缩放的比例， 可以是number|'cover'|'contain'
     scale: 1,
 
@@ -107,6 +118,21 @@
         imageOptions = $.extend({}, option, {
           id: index
         }, options)
+      }
+
+      if (imageOptions.mask) {
+        if (imageOptions.maskShape === 'rect') {
+          imageOptions.maskSize = options.maskSize || {
+              w: 200,
+              h: 200
+            }
+        } else if (imageOptions.maskShape === 'circle') {
+          imageOptions.maskSize = options.maskSize || {
+              x: 0,
+              y: 0,
+              radius: 100
+            }
+        }
       }
 
       return imageOptions
@@ -422,15 +448,7 @@
       bm.scaleY = scale.scaleY
 
       if (options.mask) {
-        var containerMask = new createjs.Shape()
-        containerMask.width = bm.image.width * scale.scaleX
-        containerMask.height = bm.image.height * scale.scaleY
-        containerMask
-          .graphics
-          .beginFill('#ffffff')
-          .drawRect(bm.x - bm.regX * scale.scaleX, bm.y - bm.regY * scale.scaleY,
-            bm.image.width * scale.scaleX, bm.image.height * scale.scaleY)
-        bm.mask = containerMask
+        bm.mask = createMask(options.maskShape, options.maskSize, bm, scale, options)
       }
       // 假定， 所有container中的image都有相同的z-index
       bm.zIndex = 1
@@ -590,7 +608,7 @@
         image.zIndex = 1
       }
 
-      var targetTouches =  e.nativeEvent.targetTouches
+      var targetTouches = e.nativeEvent.targetTouches
       isMultiTouch = targetTouches && targetTouches.length === 1
 
       // isMultiTouch = false
@@ -752,6 +770,38 @@
       scaleX: scaleX,
       scaleY: scaleY
     }
+  }
+
+  /**
+   * 生成图片mask
+   * @param shape mask的shape 'rect'或者'circle'
+   * @param size  mask的大小 {w: 100, h: 100}或者 {x: 0, y: 0, radius: 50}
+   * @param bm 图片 BitMap实例
+   * @param scale 图片缩放的比例
+   */
+  function createMask(shape, size, bm, scale, options) {
+    console.log(options)
+    var containerMask = new createjs.Shape()
+    containerMask.width = bm.image.width * scale.scaleX
+    containerMask.height = bm.image.height * scale.scaleY
+    if (shape === 'rect') {
+      containerMask
+        .graphics
+        .beginFill('#ffffff')
+        .drawRect(bm.x - size.w / 2, bm.y - size.h / 2, size.w, size.h)
+    } else if (shape === 'circle') {
+      size = {
+        x: bm.x + size.x,
+        y: bm.y + size.y,
+        radius: size.radius
+      }
+
+      containerMask
+        .graphics
+        .beginFill('#ffffff')
+        .drawCircle(size.x, size.y, size.radius)
+    }
+    return containerMask
   }
 
   /**

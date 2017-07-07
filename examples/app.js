@@ -9,7 +9,8 @@ $(function () {
             x: 1,
             y: 1
           },
-          mask: false,
+          mask: true,
+          maskShape: 'rect',
           scale: 1
         },
         {
@@ -20,21 +21,27 @@ $(function () {
             x: 2,
             y: 2
           },
-          mask: false,
+          mask: true,
+          maskShape: 'circle',
+          maskSize: {
+            x: 0,
+            y: 0,
+            radius: 200
+          },
           scale: 1
         },
-        {
-          id: 'img3',
-          url: './images/img6.jpg',
-          position: 'left center',
-          offset: {
-            x: 0,
-            y: 0
-          },
-          mask: false,
-          scale: 1,
-          enabledMultiTouches: true
-        }
+        // {
+        //   id: 'img3',
+        //   url: './images/img6.jpg',
+        //   position: 'left center',
+        //   offset: {
+        //     x: 0,
+        //     y: 0
+        //   },
+        //   mask: false,
+        //   scale: 1,
+        //   enabledMultiTouches: true
+        // }
       ],
       foregrounds: [
         // {
