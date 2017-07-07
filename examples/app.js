@@ -1,5 +1,6 @@
 $(function () {
-  var canvas = $('#stage').Scale({
+  var canvas = $('#stage').Scale(
+    /*{
     images: [
       {
         id: 'img1',
@@ -23,7 +24,7 @@ $(function () {
         mask: false,
         scale: 1
       }
-      /*{
+      /!*{
        id: 'img3',
        url: './examples/images/img6.jpg',
        position: 'left center',
@@ -34,7 +35,7 @@ $(function () {
        mask: false,
        scale: 0,
        enabledMultiTouches: true
-       }*/
+       }*!/
     ],
     foregrounds: [
       // {
@@ -59,7 +60,8 @@ $(function () {
       // }
     ]
     // foregrounds: ['./examples/images/img6.jpg']
-  })
+  }*/
+  )
 
   // 添加背景
   var addBackgroundBtn = $('.add-back')
