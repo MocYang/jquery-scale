@@ -24,8 +24,8 @@
       y: 0
     },
 
-    // 是否响应鼠标事件，默认为true
-    mouseEnabled: true,
+    // 是否允许交互操作
+    interactive: false,
 
     // 是否添加mask
     mask: false,
@@ -50,7 +50,7 @@
   // 维护全局的ID，保持所有图片的ID唯一
   var id = 1
 
-  function Scale(options) {
+  function Scale(images) {
 
     var self = this
 
@@ -69,23 +69,18 @@
 
     /**
      * 使用已有的scale对象和新的配置对象，组合得到新的scale对象
-     * @param options {string|object} 替换/新建图片时，图片的URL/配置对象
      * @param imageOptions 图片的scale对象
      * @param exitOptions  目标图片的scale对象
      * @param bm           使用新图片的URL生成的BitMap实例
      * @return {*}
      */
-    function combineScaleObjectWidthOld(options, imageOptions, exitOptions, bm) {
+    function combineScaleObjectWidthOld(imageOptions, exitOptions, bm) {
       var newScaleObj = null
-      if (exitOptions && typeof options === 'string') {
+      if (exitOptions) {
         var exitBmCopy = exitOptions.bm;
         delete exitBmCopy.image
-        delete exitBmCopy.regX
-        delete exitBmCopy.regY
-        delete exitBmCopy.x
-        delete exitBmCopy.y
 
-        bm = $.extend(true, {}, bm, exitBmCopy)
+        bm = $.extend(true, {}, exitBmCopy, bm)
         newScaleObj = createScaleObj(imageOptions, bm)
       } else {
         newScaleObj = createScaleObj(imageOptions, bm)
@@ -112,13 +107,21 @@
 
         // 替换图片时，如果只传入图片URL则使用目标图片的配置项来拓展新的配置项
         if (exitOptions) {
+          delete exitOptions.url
           imageOptions = extendExitOptions(imageOptions, exitOptions)
         }
       } else if (typeof options === 'object') {
-        imageOptions = $.extend({}, option, {
+        imageOptions = $.extend(true, {}, option, {
           id: index
         }, options)
+
+        // 替换图片时，如果只传入图片URL则使用目标图片的配置项来拓展新的配置项
+        if (exitOptions) {
+          imageOptions = extendExitOptions(exitOptions ,imageOptions)
+        }
       }
+
+
 
       if (imageOptions.mask) {
         if (imageOptions.maskShape === 'rect') {
@@ -133,6 +136,12 @@
               radius: 100
             }
         }
+      } else {
+        if(exitOptions) {
+          exitOptions.bm.mask = null
+        }
+        delete imageOptions.maskSize
+        delete imageOptions.maskShape
       }
 
       return imageOptions
@@ -144,46 +153,43 @@
      * @param exitOptions
      * @return {void|*}
      */
-    function extendExitOptions(imageOptions, exitOptions) {
+    function extendExitOptions(exitOptions, imageOptions) {
       var newOptions
       var oldOptionsCopy = $.extend(true, {}, exitOptions)
-      delete oldOptionsCopy.url
-      delete oldOptionsCopy.id
-      delete oldOptionsCopy.bm
-      newOptions = $.extend(true, {}, imageOptions, oldOptionsCopy)
+      if(imageOptions.url) {
+        delete oldOptionsCopy.url
+        delete oldOptionsCopy.id
+        delete oldOptionsCopy.bm
+      }
+      newOptions = $.extend(true, {}, oldOptionsCopy, imageOptions)
       return newOptions
     }
 
     /**
-     * 添加背景图
+     * 在给定位置添加一张片图，没有指定position时，默认添加到数组末尾
      * @param options 一张图片的URL，或image-options对象
+     * @param position 指定图片应该在images数组中的那个位置添加
      * @param exitOptions
      */
-    function addBackgroundImage(options, exitOptions) {
+    function addChild(options, position, exitOptions) {
       var imageOptions = generateOptions(options, exitOptions)
-      if (imageOptions) {
-        addImage(self, imageOptions, function (bm) {
-          var newScaleObj = combineScaleObjectWidthOld(options, imageOptions, exitOptions, bm)
-          self.images.push(newScaleObj)
-          drawContainerImage(self, self.images)
-          addEvents(self, newScaleObj.bm, newScaleObj)
-        })
+      var images = self.images
+      position = position && Number(position)
+      if (position >= images.length) {
+        position = images.length
       }
-    }
-
-    /**
-     * 添加前景图
-     * @param options {string|object} 图片URL或者图片的配置对象
-     * @param exitOptions  {object}   图片的配置对象
-     */
-    function addForegroundImage(options, exitOptions) {
-      var imageOptions = generateOptions(options, exitOptions)
       if (imageOptions) {
         addImage(self, imageOptions, function (bm) {
-          var newScaleObj = combineScaleObjectWidthOld(options, imageOptions, exitOptions, bm)
-          self.foregrounds.push(newScaleObj)
-          bm.zIndex = 9999
-          drawForegroundImages(self, self.foregrounds)
+          var newScaleObj = combineScaleObjectWidthOld(imageOptions, exitOptions, bm)
+          if (typeof position === 'number') {
+            self.images = images.slice(0, position).concat(newScaleObj).concat(images.slice(position))
+          } else {
+            self.images.push(newScaleObj)
+          }
+          drawImages(self, self.images)
+          if (typeof imageOptions.interactive === 'boolean' && imageOptions.interactive) {
+            addEvents(self, newScaleObj.bm, newScaleObj)
+          }
         })
       }
     }
@@ -210,18 +216,22 @@
     }
 
     /* 实例方法 */
-    // 添加背景图
-    this.addBackgroundImage = function (options) {
-      addBackgroundImage(options)
+    // 添加一张图片，默认添加到stage的最上层
+    this.addChild = function (options) {
+      addChild(options)
     }
 
-    // 添加前景图
-    this.addForegroundImage = function (options) {
-      addForegroundImage(options)
+    /**
+     * 在位置positions处添加一张图片
+     * @param options
+     * @param index
+     */
+    this.addChildAt = function (options, index) {
+      addChild(options, index)
     }
 
     // 清空stage
-    this.clearStage = function () {
+    this.clear = function () {
       var stage = self.stage
       var container = self.container
       stage.removeAllChildren()
@@ -230,91 +240,98 @@
       stage.update()
 
       self.images.length = 0
-      self.foregrounds.length = 0
     }
 
-    // 替换背景图
-    this.exchangeBackgroundImage = function (id, img) {
-      var options = self.getOptions(id, 'images')
-      if (options) {
-        self.removeBackgroundImage(id)
-        addBackgroundImage(img, options)
-      }
-    }
-
-    // 替换前景图
-    this.exchangeForegroundImage = function (id, img) {
-      var options = self.getOptions(id, 'foregrounds')
-      if (options) {
-        self.removeForegroundImage(id)
-        addForegroundImage(img, options)
-      }
-    }
-
-    // 返回指定ID的图片options
-    this.getOptions = function (id, context) {
-      var resultImage = null
-      var images = self[context]
+    /**
+     * 返回指定ID的图片的scale配置项,如果只有一个匹配，则返回该对象，如果有多个匹配则返回一个数组，包含所有匹配项
+     * @param id
+     * @return {*}
+     */
+    this.getOptions = function (id) {
+      var resultImage = []
+      var images = self.images
       images.forEach(function (image, index) {
         if (image.id == id) {
-          resultImage = image
+          resultImage.push(image)
         }
       })
 
-      return resultImage
+      return resultImage.length === 1 ? resultImage[0] : resultImage
     }
 
-    // 返回所有的背景图
-    this.getAllBackgroundImages = function () {
-      return self.images
-    }
-
-    // 返回所有的前景图
-    this.getAllForegroundImages = function () {
-      return self.foregrounds
+    /**
+     * 返回当前所有的images
+     * @return {Array.<T>|*|Array}
+     */
+    this.getAllImages = function () {
+      return self.images.slice()
     }
 
     // 移除stage上的一张给定的图片
-    this.removeImage = function (id, context) {
+    this.removeImage = function (id) {
       var images = self.images.slice()
-      var foregrounds = self.foregrounds.slice()
-      if (context) {
-        var container = self[context].slice()
-        container = removeItemInArray(container, 'id', id)
-        switch (context) {
-          case 'images':
-            images = container
-            break
-          case 'foregrounds':
-            foregrounds = container
-        }
-      } else {
-        images = removeItemInArray(images, 'id', id)
-        foregrounds = removeItemInArray(foregrounds, 'id', id)
-      }
+      images = removeItemInArray(images, 'id', id)
 
-      self.clearStage();
+      self.clear();
 
       self.images = images.slice()
-      self.foregrounds = foregrounds.slice()
 
-      drawContainerImage(self, self.images)
-      drawForegroundImages(self, self.foregrounds)
+      drawImages(self, self.images)
+
+      return this
     }
 
-    // 移除指定ID的背景图
-    this.removeBackgroundImage = function (id) {
-      self.removeImage(id, 'images')
-    }
-
-    // 移除指定ID的前景图
-    this.removeForegroundImage = function (id) {
-      self.removeImage(id, 'foregrounds')
-    }
-
-    // 返回stage的图片数据，以base64的格式
+    // TODO: 替换单张图片和多张还有问题
     /**
-     *
+     * 替换一张图片
+     * @param id
+     * @param img
+     * @param keepProperties 是否保留目标元素的属性，默认不保留原属性
+     * @return {object}
+     */
+    this.replace = function (id, img, keepProperties) {
+      var options = null
+      keepProperties = keepProperties || false
+      var images = self.images.slice()
+      self.clear();
+      images.forEach(function (image, i) {
+        if (image.id == id) {
+          if (keepProperties) {
+            options = image
+          }
+
+          images = removeItemInArray(images, 'id', id).slice()
+          self.images = images.slice()
+
+          addChild(img, i, options)
+        }
+      })
+
+      return this
+    }
+
+    /**
+     * 设置指定ID的图片options
+     * @param id
+     * @param options
+     */
+    this.setOption = function(id, options) {
+      var images = self.images.slice()
+      var selectedId = id
+      images.forEach(function(image, i) {
+        if(image.id == selectedId) {
+          options = $.extend(true, {}, options, {
+            url: options.url || image.url
+          })
+          self.replace(selectedId, options, true)
+        }
+      })
+
+      return this
+    }
+
+    /**
+     * 返回stage的图片数据，以base64的格式
      * @param mime 图片的格式，支持的格式为：image/png(默认)，image/jpeg, image/webp(chrome支持)
      * @param quality 在指定图片格式为 image/jpeg 或 image/webp的情况下，可以从 0 到 1 的区间内选择图片的质量。
      *                如果超出取值范围，将会使用默认值 0.92。其他参数会被忽略
@@ -339,27 +356,13 @@
       self.stage.update()
     })
 
-    var images = options && options.images           // 背景图
-    var foregrounds = options && options.foregrounds // 前景图
-    this.images = []                                 // 实例上所有的背景图
-    this.foregrounds = []                            // 实例上所有的前景图
+    this.images = []         // 所有的scale图片集合
 
-    // 添加背景图
+    // 添加图片
     if (images && Array.isArray(images) && images.length >= 1) {
-      var imageOptions = null;
       images.forEach(function (image) {
         (function (img) {
-          addBackgroundImage(img)
-        })(image)
-      })
-    }
-
-    // 添加前景图
-    if (foregrounds && Array.isArray(foregrounds) && foregrounds.length >= 1) {
-      imageOptions = null;
-      foregrounds.forEach(function (image) {
-        (function (img) {
-          addForegroundImage(img)
+          addChild(img)
         })(image)
       })
     }
@@ -461,8 +464,7 @@
       if (options.mask) {
         bm.mask = createMask(options.maskShape, options.maskSize, bm, scale, options)
       }
-      // 假定， 所有container中的image都有相同的z-index
-      bm.zIndex = 1
+
       return bm
     }
   }
@@ -503,7 +505,6 @@
           x: image.x - e.stageX,
           y: image.y - e.stageY
         }
-        image.zIndex = 99
       }
 
       if (options.enabledMultiTouches) {
@@ -609,22 +610,21 @@
         }
       }
 
-      drawContainerImage($container, $container.images)
-      drawForegroundImages($container, $container.foregrounds)
+      drawImages($container, $container.images)
+      // drawForegroundImages($container, $container.foregrounds)
     })
 
     image.on('pressup', function (e) {
       if (e.primary && image) {
         image.offset = null
-        image.zIndex = 1
       }
 
       var targetTouches = e.nativeEvent.targetTouches
       isMultiTouch = targetTouches && targetTouches.length === 1
 
       // isMultiTouch = false
-      drawContainerImage($container, $container.images)
-      drawForegroundImages($container, $container.foregrounds)
+      drawImages($container, $container.images)
+      // drawForegroundImages($container, $container.foregrounds)
     })
 
     return {
@@ -819,12 +819,9 @@
    * @param $container
    * @param images
    */
-  function drawContainerImage($container, images) {
+  function drawImages($container, images) {
     var stage = $container.stage
     var container = $container.container
-    images = images.sort(function (x, y) {
-      return x.bm.zIndex - y.bm.zIndex
-    })
     images.forEach(function (img, i) {
       container.addChild(img.bm)
     })

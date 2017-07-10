@@ -22,14 +22,28 @@
 <div class="wrapper" id="stage"></div>
 <canvas id="example" width="200" height="200"></canvas>
 <ul>
-  <li><button class="add-back">添加背景图</button></li>
-  <li><button class="add-fore">添加前景图</button></li>
+  <li><button class="add-child">添加一张图</button>（在数组末尾）</li>
+  <li><input class="add-child-index" type="text" placeholder="输入要添加的位置，从0开始"><button class="add-child-at">添加一张图</button>（在位置i处）</li>
   <li><button class="clear">清空stage</button></li>
-  <li><input class="remove-back" type="text" placeholder="填写图片的ID"><button class="remove-back-btn">移除该背景图</button></li>
-  <li><input class="remove-fore" type="text" placeholder="填写图片的ID"><button class="remove-fore-btn">移除该前景图</button></li>
+  <li><button class="get-all">获取所有的images</button></li>
   <li><input class="remove" type="text" placeholder="填写图片的ID"><button class="remove-btn">移除一张图</button></li>
-  <li><input class="exchange-back" type="text" placeholder="填写图片的ID"><button class="exchange-back-btn">替换某张背景图</button></li>
-  <li><input class="exchange-fore" type="text" placeholder="填写图片的ID"><button class="exchange-fore-btn">替换某张前景图</button></li>
+  <li><input class="replace" type="text" placeholder="填写图片的ID"><button class="replace-btn">替换某张图</button></li>
+  <li><input class="get-options" type="text" placeholder="填写图片的ID"><button class="get-options-btn">获取指定ID的options</button></li>
+  <li><button class="set-options-btn">设置指定ID的options</button>
+    <pre>
+      {
+        id: 'img2222',
+        position: 'center right',
+        offset: {
+          x: 11,
+          y: 11
+        },
+        mask: false,
+        interactive: true,
+        scale: 2
+      }
+    </pre>
+  </li>
   <li><button class="get-data-btn">获取stage的image data</button></li>
 </ul>
 <div class="container">
