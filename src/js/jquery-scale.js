@@ -186,7 +186,7 @@
           } else {
             self.images.push(newScaleObj)
           }
-          drawImages(self, self.images)
+          draw(self, self.images)
           if (typeof imageOptions.interactive === 'boolean' && imageOptions.interactive) {
             addEvents(self, newScaleObj.bm, newScaleObj)
           }
@@ -213,7 +213,7 @@
           if (typeof position === 'number') {
             self.images.splice(position, 1, newScaleObj)
           }
-          drawImages(self, self.images)
+          draw(self, self.images)
           if (typeof imageOptions.interactive === 'boolean' && imageOptions.interactive) {
             addEvents(self, newScaleObj.bm, newScaleObj)
           }
@@ -260,7 +260,7 @@
     // 清空stage
     this.clear = function () {
       self.images.length = 0
-      drawImages(self, self.images)
+      draw(self, self.images)
     }
 
     /**
@@ -297,7 +297,7 @@
 
       self.images = images.slice()
 
-      drawImages(self, self.images)
+      draw(self, self.images)
 
       return this
     }
@@ -312,10 +312,6 @@
     this.replace = function (id, img, keepProperties) {
       var options = null
       keepProperties = keepProperties || false
-      id = id && Number(id)
-      if(isNaN(id)) {
-        return this
-      }
       var images = self.images
       for(var i = 0; i < images.length; i++) {
         if (images[i].id == id) {
@@ -629,8 +625,7 @@
         }
       }
 
-      drawImages($container, $container.images)
-      // drawForegroundImages($container, $container.foregrounds)
+      draw($container, $container.images)
     })
 
     image.on('pressup', function (e) {
@@ -642,7 +637,7 @@
       isMultiTouch = targetTouches && targetTouches.length === 1
 
       // isMultiTouch = false
-      drawImages($container, $container.images)
+      draw($container, $container.images)
       // drawForegroundImages($container, $container.foregrounds)
     })
 
@@ -838,7 +833,7 @@
    * @param $container
    * @param images
    */
-  function drawImages($container, images) {
+  function draw($container, images) {
     var stage = $container.stage
     var container = $container.container
 
