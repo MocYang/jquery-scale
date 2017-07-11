@@ -117,10 +117,9 @@
 
         // 替换图片时，如果只传入图片URL则使用目标图片的配置项来拓展新的配置项
         if (exitOptions) {
-          imageOptions = extendExitOptions(exitOptions ,imageOptions)
+          imageOptions = extendExitOptions(exitOptions, imageOptions)
         }
       }
-
 
 
       if (imageOptions.mask) {
@@ -137,7 +136,7 @@
             }
         }
       } else {
-        if(exitOptions) {
+        if (exitOptions) {
           exitOptions.bm.mask = null
         }
         delete imageOptions.maskSize
@@ -156,7 +155,7 @@
     function extendExitOptions(exitOptions, imageOptions) {
       var newOptions
       var oldOptionsCopy = $.extend(true, {}, exitOptions)
-      if(imageOptions.url) {
+      if (imageOptions.url) {
         delete oldOptionsCopy.url
         delete oldOptionsCopy.id
         delete oldOptionsCopy.bm
@@ -313,7 +312,7 @@
       var options = null
       keepProperties = keepProperties || false
       var images = self.images
-      for(var i = 0; i < images.length; i++) {
+      for (var i = 0; i < images.length; i++) {
         if (images[i].id == id) {
           if (keepProperties) {
             options = images[i]
@@ -326,15 +325,88 @@
     }
 
     /**
+     * 设置图片的位置偏移等属性 [x=0]  [y=0]  [scaleX=1]  [scaleY=1]  [rotation=0]  [skewX=0]  [skewY=0]  [regX=0]  [regY=0]
+     * @param id
+     * @param options
+     */
+    this.setTransform = function (id, options) {
+      var images = self.images
+      images.forEach(function (image, i) {
+        if (image.id == id) {
+          var bm = image.bm
+          var transform = {
+            x: options.x || bm.x,
+            y: options.y || bm.y,
+            scaleX: options.scaleX || bm.scaleX,
+            scaleY: options.scaleY || bm.scaleY,
+            rotation: options.rotation || bm.rotation,
+            skewX: options.skewX || bm.skewX,
+            skewY: options.skewY || bm.skewY,
+            regX: options.regX || bm.regX,
+            regY: options.regY || bm.regY
+          }
+          bm.setTransform(
+            transform.x,
+            transform.y,
+            transform.scaleX,
+            transform.scaleY,
+            transform.rotation,
+            transform.skewX,
+            transform.skewY,
+            transform.regX,
+            transform.regY)
+        }
+      })
+
+      return this
+    }
+
+    /**
+     *
+     * @param id
+     * @param cb
+     */
+    this.getTransform = function (id, cb) {
+      var images = self.images
+      var resultArr = []
+      var transform = null
+      for (var i = 0; i < images.length; i++) {
+        if (images[i].id == id) {
+          var bm = images[i].bm
+          transform = {
+            x: bm.x,
+            y: bm.y,
+            scaleX: bm.scaleX,
+            scaleY: bm.scaleY,
+            rotation: bm.rotation,
+            skewX: bm.skewX,
+            skewY: bm.skewY,
+            regX: bm.regX,
+            regY: bm.regY
+          }
+          resultArr.push(transform)
+        }
+      }
+
+      if(resultArr.length > 1) {
+        cb(resultArr)
+      } else {
+        if(transform) {}
+        cb(transform)
+      }
+    }
+
+
+    /**
      * 设置指定ID的图片options
      * @param id
      * @param options
      */
-    this.setOption = function(id, options) {
+    this.setOption = function (id, options) {
       var images = self.images.slice()
       var selectedId = id
-      images.forEach(function(image, i) {
-        if(image.id == selectedId) {
+      images.forEach(function (image, i) {
+        if (image.id == selectedId) {
           options = $.extend(true, {}, options, {
             url: options.url || image.url
           })
@@ -844,19 +916,6 @@
       container.addChild(img.bm)
     })
     stage.addChild(container)
-    stage.update()
-  }
-
-  /**
-   * 把所有的前景图都画到stage上
-   * @param $container
-   * @param images
-   */
-  function drawForegroundImages($container, images) {
-    var stage = $container.stage
-    images.forEach(function (img, i) {
-      stage.addChild(img.bm)
-    })
     stage.update()
   }
 

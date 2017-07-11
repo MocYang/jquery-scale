@@ -22,8 +22,8 @@ $(function () {
         y: 2
       },
       mask: false,
-      interactive: false,
-      scale: 1.1
+      interactive: true,
+      scale: 1
     }
     // {
     //   id: 'img3',
@@ -42,14 +42,14 @@ $(function () {
   // 添加一张图
   var addChild = $('.add-child')
   addChild.click(function (e) {
-    canvas.addChild('./images/img6.jpg')
-    // canvas.addChild({
-    //   id: 'img6',
-    //   url: './images/img6.jpg',
-    //   position: 'top right',
-    //   scale: 0.5,
-    //   interactive: true
-    // })
+    // canvas.addChild('./images/img6.jpg')
+    canvas.addChild({
+      id: 'img6',
+      url: './images/img6.jpg',
+      position: 'top right',
+      scale: 0.5,
+      interactive: true
+    })
   })
 
   // 在images数组的最前面添加一张照片
@@ -131,6 +131,24 @@ $(function () {
       mask: false,
       interactive: true,
       scale: 0.5
+    })
+  })
+
+  // setTransform
+  var transformBtn = $('.set-transform-btn')
+  var rotation = 5
+  transformBtn.click(function(e) {
+    rotation += 5
+    canvas.setTransform('img6', {
+      // x:  0,
+      // y:  0,
+      scaleX:  0.5,
+      scaleY:  0.5,
+      rotation:  rotation,
+      // skewX:  0,
+      // skewY:  0,
+      // regX:  0,
+      // regY:  0
     })
   })
 
