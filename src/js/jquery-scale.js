@@ -195,6 +195,33 @@
     }
 
     /**
+     * 在给定位置添加一张片图，没有指定position时，默认添加到数组末尾
+     * @param options 一张图片的URL，或image-options对象
+     * @param position 指定图片应该在images数组中的那个位置添加
+     * @param exitOptions
+     */
+    function replaceChild(options, position, exitOptions) {
+      var imageOptions = generateOptions(options, exitOptions)
+      var images = self.images
+      position = position && Number(position)
+      if (position >= images.length) {
+        position = images.length
+      }
+      if (imageOptions) {
+        addImage(self, imageOptions, function (bm) {
+          var newScaleObj = combineScaleObjectWidthOld(imageOptions, exitOptions, bm)
+          if (typeof position === 'number') {
+            self.images.splice(position, 1, newScaleObj)
+          }
+          drawImages(self, self.images)
+          if (typeof imageOptions.interactive === 'boolean' && imageOptions.interactive) {
+            addEvents(self, newScaleObj.bm, newScaleObj)
+          }
+        })
+      }
+    }
+
+    /**
      * 移除数组中的一个item，并返回
      * @param array
      * @param key
@@ -232,14 +259,16 @@
 
     // 清空stage
     this.clear = function () {
-      var stage = self.stage
-      var container = self.container
-      stage.removeAllChildren()
-      container.removeAllChildren()
-      stage.clear()
-      stage.update()
-
       self.images.length = 0
+      drawImages(self, self.images)
+    }
+
+    /**
+     * 返回当前所有的images的数组副本
+     * @return {Array.<T>|*|Array}
+     */
+    this.getAllImages = function () {
+      return self.images.slice()
     }
 
     /**
@@ -259,16 +288,8 @@
       return resultImage.length === 1 ? resultImage[0] : resultImage
     }
 
-    /**
-     * 返回当前所有的images
-     * @return {Array.<T>|*|Array}
-     */
-    this.getAllImages = function () {
-      return self.images.slice()
-    }
-
     // 移除stage上的一张给定的图片
-    this.removeImage = function (id) {
+    this.removeChild = function (id) {
       var images = self.images.slice()
       images = removeItemInArray(images, 'id', id)
 
@@ -281,7 +302,6 @@
       return this
     }
 
-    // TODO: 替换单张图片和多张还有问题
     /**
      * 替换一张图片
      * @param id
@@ -292,20 +312,19 @@
     this.replace = function (id, img, keepProperties) {
       var options = null
       keepProperties = keepProperties || false
-      var images = self.images.slice()
-      self.clear();
-      images.forEach(function (image, i) {
-        if (image.id == id) {
+      id = id && Number(id)
+      if(isNaN(id)) {
+        return this
+      }
+      var images = self.images
+      for(var i = 0; i < images.length; i++) {
+        if (images[i].id == id) {
           if (keepProperties) {
-            options = image
+            options = images[i]
           }
-
-          images = removeItemInArray(images, 'id', id).slice()
-          self.images = images.slice()
-
-          addChild(img, i, options)
+          replaceChild(img, i, options)
         }
-      })
+      }
 
       return this
     }
@@ -822,6 +841,10 @@
   function drawImages($container, images) {
     var stage = $container.stage
     var container = $container.container
+
+    stage.removeAllChildren()
+    container.removeAllChildren()
+
     images.forEach(function (img, i) {
       container.addChild(img.bm)
     })

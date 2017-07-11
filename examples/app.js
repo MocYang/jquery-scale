@@ -39,15 +39,17 @@ $(function () {
     // }
   ])
 
-  // 添加背景
-  var addBackgroundBtn = $('.add-child')
-  addBackgroundBtn.click(function (e) {
-    canvas.addChild({
-      id: 'img6',
-      url: './images/img6.jpg',
-      position: 'top right',
-      scale: 1
-    })
+  // 添加一张图
+  var addChild = $('.add-child')
+  addChild.click(function (e) {
+    canvas.addChild('./images/img6.jpg')
+    // canvas.addChild({
+    //   id: 'img6',
+    //   url: './images/img6.jpg',
+    //   position: 'top right',
+    //   scale: 0.5,
+    //   interactive: true
+    // })
   })
 
   // 在images数组的最前面添加一张照片
@@ -63,24 +65,16 @@ $(function () {
     }, Number(index.val()))
   })
 
+  // 清空stage
+  var clearBtn = $('.clear')
+  clearBtn.click(function (e) {
+    canvas.clear()
+  })
 
   // 获取所有的图片
   var getAllBtn = $('.get-all')
   getAllBtn.click(function () {
     console.log(canvas.getAllImages())
-  })
-
-  // 移除一张图片
-  var removeInput = $('.remove')
-  var removeBtn = $('.remove-btn')
-  removeBtn.click(function (e) {
-    canvas.removeImage(removeInput.val().trim())
-  })
-
-  // 清空stage
-  var clearBtn = $('.clear')
-  clearBtn.click(function (e) {
-    canvas.clear()
   })
 
   // getData
@@ -89,18 +83,23 @@ $(function () {
     var imageSrc = canvas.toDataURL('image/jpeg', 0.5)
     var image = new Image()
     image.onload = function () {
-      console.dir(image)
       $('.container').empty().append(image)
     }
     image.src = imageSrc
   })
-
 
   // getOptions
   var getOptionsInput = $('.get-options')
   var getOptionsBtn = $('.get-options-btn')
   getOptionsBtn.click(function(e) {
     console.log(canvas.getOptions(getOptionsInput.val()))
+  })
+
+  // 移除一张图片
+  var removeInput = $('.remove')
+  var removeBtn = $('.remove-btn')
+  removeBtn.click(function (e) {
+    canvas.removeChild(removeInput.val().trim())
   })
 
   // 替换某张图
@@ -115,7 +114,7 @@ $(function () {
       url: './images/img6.jpg',
       mask: false,
       position: 'center right',
-      interactive: false
+      interactive: true
     })
   })
 
