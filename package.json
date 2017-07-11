@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "uglifyjs  ./dist/js/jquery-scale.js -o ./dist/js/jquery-scale.min.js"
+    "build": "uglifyjs  src/js/jquery-scale.js -o src/js/jquery-scale.min.js"
   },
   "repository": {
     "type": "git",
