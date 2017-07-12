@@ -123,15 +123,15 @@
       if (imageOptions.mask) {
         if (imageOptions.maskShape === 'rect') {
           imageOptions.maskSize = options.maskSize || {
-            w: 200,
-            h: 200
-          }
+              w: 200,
+              h: 200
+            }
         } else if (imageOptions.maskShape === 'circle') {
           imageOptions.maskSize = options.maskSize || {
-            x: 0,
-            y: 0,
-            radius: 100
-          }
+              x: 0,
+              y: 0,
+              radius: 100
+            }
         }
       } else {
         if (exitOptions) {
@@ -386,7 +386,7 @@
           resultArr.push(transform)
         }
       }
-      cb(resultArr.length > 1 ? cb(resultArr) : cb(transform))
+      cb(resultArr.length > 1 ? resultArr : transform)
     }
 
     /**
@@ -511,16 +511,15 @@
       var position = options.position
       var offset = options.offset
 
-      var positions = getPositions($container, position)
-      var imageOffset = getDefaultOffsets(bm.image, position)
       var scale = getScale($container, bm.image, options.scale)
+      var positions = getPositions($container, position, bm, scale)
+      var imageOffset = getDefaultOffsets(bm.image, position, bm, scale)
 
       // 默认图片的注册点是canvas的中心点
       var x = $container.width() / 2
       var y = $container.height() / 2
       var regX = imageOffset.x
       var regY = imageOffset.y
-
       // 如果传入了自定义的position
       if (positions) {
         x = positions.x
@@ -707,11 +706,12 @@
 
   /**
    * 根据传入的position字符串值，生成相应的x,y定位值
-   * @param $container
-   * @param position
+   * @param $container stage容器
+   * @param position   配置中的position值
+   * @param bm      BitMap实例
    * @returns {{x: number, y: number}}
    */
-  function getPositions ($container, position) {
+  function getPositions ($container, position, bm, scale) {
     // 这里都放大1倍的原因是因为， 生成canvas时， 指定的width为设置其css的width的2倍
     var stageWidth = $container.width() * 2
     var stageHeight = $container.height() * 2
@@ -720,7 +720,11 @@
       height: stageHeight
     }
     position = position.toLowerCase()
-    return matchPosition(container, position)
+    var reg = matchPosition(container, position, bm, scale)
+    return {
+      x: reg.x,
+      y: reg.y
+    }
   }
 
   /**
@@ -729,82 +733,164 @@
    * @param position
    * @returns {{x: number, y: number}}
    */
-  function getDefaultOffsets (image, position) {
+  function getDefaultOffsets (image, position, bm, scale) {
     var container = {
       width: image.width,
       height: image.height
     }
     position = position.toLowerCase()
-    return matchPosition(container, position)
+    var reg = matchPosition(container, position, bm, scale)
+    return {
+      x: reg.regX,
+      y: reg.regY
+    }
+    // return {
+    //   x: 0,
+    //   y: 0
+    // }
   }
 
   /**
    * 根据9个不同的位置，生成不同的x, y值
    * @param container 偏移值的参考元素， 可以是stage，或一张片
    * @param position
+   * @param bm
    * @returns {{x: number, y: number}}
    */
-  function matchPosition (container, position) {
+  function matchPosition (container, position, bm, scale) {
     var px = 0
     var py = 0
     var width = container.width
     var height = container.height
-
+    var image = bm && bm.image
+    var imageWidth = (image && image.width * scale.scaleX) || 0
+    var imageHeight = (image && image.height * scale.scaleY) || 0
+    var positionNum = 5
     switch (position) {
       case 'top left':
       case 'left top':
         px = 0
         py = 0
+        positionNum = 1
         break
       case 'top center':
       case 'center top':
         px = width / 2
         py = 0
+        positionNum = 2
         break
       case 'top right':
       case 'right top':
         px = width
         py = 0
+        positionNum = 3
         break
       case 'center left':
       case 'left center':
         px = 0
         py = height / 2
+        positionNum = 4
         break
       case 'center center':
       case 'center':
         px = width / 2
         py = height / 2
+        positionNum = 5
         break
       case 'center right':
       case 'right center':
         px = width
         py = height / 2
+        positionNum = 6
         break
       case 'bottom left':
       case 'left bottom':
         px = 0
         py = height
+        positionNum = 7
         break
       case 'bottom center':
       case 'center bottom':
         px = width / 2
         py = height
+        positionNum = 8
         break
       case 'bottom right':
       case 'right bottom':
         px = width
         py = height
+        positionNum = 9
         break
       default:
-        px = 0
-        py = 0
+        positionNum = 5
+    }
+    var positions = {
+      // left top | top left
+      1: {
+        x: imageWidth / 2,
+        y: imageHeight / 2,
+        regX: imageWidth / 2,
+        regY: imageHeight / 2
+      },
+      // left center | center left
+      2: {
+        x: width / 2,
+        y: imageHeight / 2,
+        regX: 0,
+        regY: imageHeight / 2
+      },
+      // top right | right top
+      3: {
+        x: width - imageWidth / 2,
+        y: imageHeight / 2,
+        regX: width / 2,
+        regY: height / 2
+      },
+      // left center | center left
+      4: {
+        x: imageWidth / 2,
+        y: height / 2,
+        regX: imageWidth / 2,
+        regY: 0
+      },
+      // center center | center
+      5: {
+        x: width / 2,
+        y: height / 2,
+        regX: imageWidth / 2,
+        regY: imageHeight / 2
+      },
+      // right center | center right
+      6: {
+        x: width - imageWidth / 2,
+        y: height / 2,
+        regX: imageWidth / 2,
+        regY: 0
+      },
+      // bottom left | left bottom
+      7: {
+        x: imageWidth / 2,
+        y: height - imageHeight / 2,
+        regX: imageWidth / 2,
+        regY: imageHeight / 2
+      },
+      // bottom center | center bottom
+      8: {
+        x: width / 2,
+        y: height - imageHeight / 2,
+        regX: 0,
+        regY: imageHeight / 2
+      },
+      // bottom right | right bottom
+      9: {
+        x: width - imageWidth / 2,
+        y: height - imageHeight / 2,
+        regX: imageWidth / 2,
+        regY: imageHeight / 2
+      }
     }
 
-    return {
-      x: px,
-      y: py
-    }
+    return positions[positionNum]
   }
 
   /**

@@ -46,7 +46,7 @@ $(function () {
     canvas.addChild({
       id: 'img6',
       url: './images/img6.jpg',
-      position: 'top right',
+      position: 'center right',
       scale: 0.5,
       interactive: true
     })
