@@ -91,7 +91,7 @@ $(function () {
   // getOptions
   var getOptionsInput = $('.get-options')
   var getOptionsBtn = $('.get-options-btn')
-  getOptionsBtn.click(function(e) {
+  getOptionsBtn.click(function (e) {
     console.log(canvas.getOptions(getOptionsInput.val()))
   })
 
@@ -104,7 +104,7 @@ $(function () {
 
   // 替换某张图
   var replaceInput = $('.replace')
-  var replaceBtn= $('.replace-btn')
+  var replaceBtn = $('.replace-btn')
   replaceBtn.click(function (e) {
     // 如果传入的URL，则根据keepProperties的值决定是否保留目标图片的相应属性
     // canvas.replace(replaceInput.val().trim(), './images/img6.jpg', true)
@@ -137,19 +137,18 @@ $(function () {
   // setTransform
   var transformBtn = $('.set-transform-btn')
   var rotation = 5
-  transformBtn.click(function(e) {
+  transformBtn.click(function (e) {
     rotation += 5
     canvas.setTransform('img6', {
       // x:  0,
       // y:  0,
-      scaleX:  0.5,
-      scaleY:  0.5,
-      rotation:  rotation,
+      scaleX: 0.5,
+      scaleY: 0.5,
+      rotation: rotation
       // skewX:  0,
       // skewY:  0,
       // regX:  0,
       // regY:  0
     })
   })
-
 })

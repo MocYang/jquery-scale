@@ -6,8 +6,8 @@
   // Array.isArray() 的polyfill
   if (!Array.isArray) {
     Array.isArray = function (arg) {
-      return Object.prototype.toString.call(arg) === '[object Array]';
-    };
+      return Object.prototype.toString.call(arg) === '[object Array]'
+    }
   }
 
   // 可选的options的取值
@@ -50,8 +50,7 @@
   // 维护全局的ID，保持所有图片的ID唯一
   var id = 1
 
-  function Scale(images) {
-
+  function Scale (images) {
     var self = this
 
     // 辅助函数
@@ -61,7 +60,7 @@
      * @param bm      image对应的BigMap实例
      * @return {object}        返回一个scale专用的对象
      */
-    function createScaleObj(options, bm) {
+    function createScaleObj (options, bm) {
       return $.extend({}, options, {
         bm: bm
       })
@@ -74,10 +73,10 @@
      * @param bm           使用新图片的URL生成的BitMap实例
      * @return {*}
      */
-    function combineScaleObjectWidthOld(imageOptions, exitOptions, bm) {
+    function combineScaleObjectWidthOld (imageOptions, exitOptions, bm) {
       var newScaleObj = null
       if (exitOptions) {
-        var exitBmCopy = exitOptions.bm;
+        var exitBmCopy = exitOptions.bm
         delete exitBmCopy.image
 
         bm = $.extend(true, {}, exitBmCopy, bm)
@@ -95,7 +94,7 @@
      * @param exitOptions {object} 执行替换时，目标图片的配置对象
      * @return {*}
      */
-    function generateOptions(options, exitOptions) {
+    function generateOptions (options, exitOptions) {
       var index = id++
       var imageOptions = null
       if (typeof options === 'string') {
@@ -121,19 +120,18 @@
         }
       }
 
-
       if (imageOptions.mask) {
         if (imageOptions.maskShape === 'rect') {
           imageOptions.maskSize = options.maskSize || {
-              w: 200,
-              h: 200
-            }
+            w: 200,
+            h: 200
+          }
         } else if (imageOptions.maskShape === 'circle') {
           imageOptions.maskSize = options.maskSize || {
-              x: 0,
-              y: 0,
-              radius: 100
-            }
+            x: 0,
+            y: 0,
+            radius: 100
+          }
         }
       } else {
         if (exitOptions) {
@@ -152,7 +150,7 @@
      * @param exitOptions
      * @return {void|*}
      */
-    function extendExitOptions(exitOptions, imageOptions) {
+    function extendExitOptions (exitOptions, imageOptions) {
       var newOptions
       var oldOptionsCopy = $.extend(true, {}, exitOptions)
       if (imageOptions.url) {
@@ -170,7 +168,7 @@
      * @param position 指定图片应该在images数组中的那个位置添加
      * @param exitOptions
      */
-    function addChild(options, position, exitOptions) {
+    function addChild (options, position, exitOptions) {
       var imageOptions = generateOptions(options, exitOptions)
       var images = self.images
       position = position && Number(position)
@@ -199,7 +197,7 @@
      * @param position 指定图片应该在images数组中的那个位置添加
      * @param exitOptions
      */
-    function replaceChild(options, position, exitOptions) {
+    function replaceChild (options, position, exitOptions) {
       var imageOptions = generateOptions(options, exitOptions)
       var images = self.images
       position = position && Number(position)
@@ -209,6 +207,7 @@
       if (imageOptions) {
         addImage(self, imageOptions, function (bm) {
           var newScaleObj = combineScaleObjectWidthOld(imageOptions, exitOptions, bm)
+
           if (typeof position === 'number') {
             self.images.splice(position, 1, newScaleObj)
           }
@@ -227,14 +226,14 @@
      * @param value
      * @return {*}
      */
-    function removeItemInArray(array, key, value) {
+    function removeItemInArray (array, key, value) {
       for (var i = 0; i < array.length; i++) {
-        if (value == array[i][key]) {
+        if (value === array[i][key]) {
           if (array[i].bm) {
             array[i].bm.removeAllEventListeners()
           }
           array = array.slice(0, i).concat(array.slice(i + 1))
-          i--;
+          i--
         }
       }
 
@@ -275,16 +274,16 @@
      * @param id
      * @return {*}
      */
-    this.getOptions = function (id) {
+    this.getOptions = function (id, cb) {
       var resultImage = []
       var images = self.images
       images.forEach(function (image, index) {
-        if (image.id == id) {
+        if (image.id === id) {
           resultImage.push(image)
         }
       })
 
-      return resultImage.length === 1 ? resultImage[0] : resultImage
+      cb(resultImage.length === 1 ? resultImage[0] : resultImage)
     }
 
     // 移除stage上的一张给定的图片
@@ -292,7 +291,7 @@
       var images = self.images.slice()
       images = removeItemInArray(images, 'id', id)
 
-      self.clear();
+      self.clear()
 
       self.images = images.slice()
 
@@ -313,7 +312,7 @@
       keepProperties = keepProperties || false
       var images = self.images
       for (var i = 0; i < images.length; i++) {
-        if (images[i].id == id) {
+        if (images[i].id === id) {
           if (keepProperties) {
             options = images[i]
           }
@@ -332,7 +331,7 @@
     this.setTransform = function (id, options) {
       var images = self.images
       images.forEach(function (image, i) {
-        if (image.id == id) {
+        if (image.id === id) {
           var bm = image.bm
           var transform = {
             x: options.x || bm.x,
@@ -371,7 +370,7 @@
       var resultArr = []
       var transform = null
       for (var i = 0; i < images.length; i++) {
-        if (images[i].id == id) {
+        if (images[i].id === id) {
           var bm = images[i].bm
           transform = {
             x: bm.x,
@@ -387,15 +386,8 @@
           resultArr.push(transform)
         }
       }
-
-      if(resultArr.length > 1) {
-        cb(resultArr)
-      } else {
-        if(transform) {}
-        cb(transform)
-      }
+      cb(resultArr.length > 1 ? cb(resultArr) : cb(transform))
     }
-
 
     /**
      * 设置指定ID的图片options
@@ -406,7 +398,7 @@
       var images = self.images.slice()
       var selectedId = id
       images.forEach(function (image, i) {
-        if (image.id == selectedId) {
+        if (image.id === selectedId) {
           options = $.extend(true, {}, options, {
             url: options.url || image.url
           })
@@ -454,11 +446,11 @@
       })
     }
 
-    return this;
+    return this
   }
 
-  function zoom(x1, y1, image) {
-    if (image.scaledSize == undefined) {
+  function zoom (x1, y1, image) {
+    if (image.scaledSize === undefined) {
       image.scaledSize = image.image.width
     }
     var scaledSize = image.image.width * image.scaleX
@@ -483,7 +475,7 @@
   }
 
   // 在canvas容器中添加一张背景图
-  function addImage($container, image, cb) {
+  function addImage ($container, image, cb) {
     var bm = null
     if (typeof image === 'string') {
       var imageElem = new Image()
@@ -493,7 +485,6 @@
       }
       imageElem.src = image
     } else if (typeof image === 'object') {
-
       // 如果直接传入的是一个img标签
       if (image.nodeType === 1) {
         bm = createBitMap($container, image)
@@ -515,7 +506,7 @@
      * @param options
      * @returns {*}
      */
-    function createBitMap($container, image, options) {
+    function createBitMap ($container, image, options) {
       var bm = new createjs.Bitmap(image)
       var position = options.position
       var offset = options.offset
@@ -557,8 +548,9 @@
   }
 
   // 插入canvas, 并初始化stage
-  function insertCanvas($container) {
-    var canvas = $('<canvas id="canvas" width="' + $container.width() * 2 + '" height="' + $container.height() * 2 + '">').get(0)
+  function insertCanvas ($container) {
+    var canvas = $('<canvas id="canvas" width="' +
+      $container.width() * 2 + '" height="' + $container.height() * 2 + '">').get(0)
     var ctx = canvas.getContext('2d')
 
     ctx.imageSmoothingEnabled = false
@@ -576,15 +568,13 @@
    * @param image 需要操作的BitMap实例
    * @param options 图片的配置选项
    */
-  function addEvents($container, image, options) {
+  function addEvents ($container, image, options) {
     var stage = $container.stage
     var touchpoints
     var newTouchpoints
     var touchResult
     var initDis
-    var initrotation
     var isMultiTouch = false
-    var now = new Date().getTime()
 
     image.on('mousedown', function (e) {
       if (e.primary && image) {
@@ -606,27 +596,26 @@
               touchpoints = [{
                 'x': targetTouches[0].pageX,
                 'y': targetTouches[0].pageY
-              }];
+              }]
               break
             case 2:
-              touchpoints = [{
-                'x': targetTouches[0].pageX,
-                'y': targetTouches[0].pageY
-              },
+              touchpoints = [
+                {
+                  'x': targetTouches[0].pageX,
+                  'y': targetTouches[0].pageY
+                },
                 {
                   'x': targetTouches[1].pageX,
                   'y': targetTouches[1].pageY
-                }];
+                }]
               initDis = caculatepointsDistance(touchpoints[0], touchpoints[1]).offsetdistance
-              initrotation = caculatepointsDistance(touchpoints[0], touchpoints[1]).angle / Math.PI * 180
               isMultiTouch = true
           }
-        }
-        else {
+        } else {
           touchpoints = [{
             'x': ne.pageX,
             'y': ne.pageY
-          }];
+          }]
         }
       }
     })
@@ -643,7 +632,7 @@
           var ne = e.nativeEvent
           var targetTouches = ne.targetTouches
           if (targetTouches) {
-            var touchnum = targetTouches.length;
+            var touchnum = targetTouches.length
 
             switch (touchnum) {
               case 1:
@@ -668,7 +657,7 @@
             }
           }
 
-          touchpoints = newTouchpoints;
+          touchpoints = newTouchpoints
 
           if (newTouchpoints && newTouchpoints.length > 1) {
             var centerPoint = {
@@ -708,9 +697,7 @@
       var targetTouches = e.nativeEvent.targetTouches
       isMultiTouch = targetTouches && targetTouches.length === 1
 
-      // isMultiTouch = false
       draw($container, $container.images)
-      // drawForegroundImages($container, $container.foregrounds)
     })
 
     return {
@@ -724,7 +711,7 @@
    * @param position
    * @returns {{x: number, y: number}}
    */
-  function getPositions($container, position) {
+  function getPositions ($container, position) {
     // 这里都放大1倍的原因是因为， 生成canvas时， 指定的width为设置其css的width的2倍
     var stageWidth = $container.width() * 2
     var stageHeight = $container.height() * 2
@@ -742,7 +729,7 @@
    * @param position
    * @returns {{x: number, y: number}}
    */
-  function getDefaultOffsets(image, position) {
+  function getDefaultOffsets (image, position) {
     var container = {
       width: image.width,
       height: image.height
@@ -757,11 +744,11 @@
    * @param position
    * @returns {{x: number, y: number}}
    */
-  function matchPosition(container, position) {
-    var px = 0,
-      py = 0,
-      width = container.width,
-      height = container.height
+  function matchPosition (container, position) {
+    var px = 0
+    var py = 0
+    var width = container.width
+    var height = container.height
 
     switch (position) {
       case 'top left':
@@ -827,7 +814,7 @@
    * @param scale
    * @returns {{scaleX: number, scaleY: number}}
    */
-  function getScale($container, image, scale) {
+  function getScale ($container, image, scale) {
     var scaleX = 1
     var scaleY = 1
     var containerWidth = $container.stage.canvas.width
@@ -837,7 +824,6 @@
     if (scale && typeof scale === 'number') {
       scaleX = scale
       scaleY = scale
-
     } else if (scale && typeof scale === 'string') {
       // 'contain'--表示将图像等比缩放到宽度或高度与容器的宽度或高度相等，图像始终被包含在容器内。
       if (scale === 'contain') {
@@ -876,7 +862,7 @@
    * @param bm 图片 BitMap实例
    * @param scale 图片缩放的比例
    */
-  function createMask(shape, size, bm, scale) {
+  function createMask (shape, size, bm, scale) {
     var containerMask = new createjs.Shape()
     containerMask.width = bm.image.width * scale.scaleX
     containerMask.height = bm.image.height * scale.scaleY
@@ -905,7 +891,7 @@
    * @param $container
    * @param images
    */
-  function draw($container, images) {
+  function draw ($container, images) {
     var stage = $container.stage
     var container = $container.container
 
@@ -919,15 +905,13 @@
     stage.update()
   }
 
-  function caculatepointsDistance(point1, point2) {
+  function caculatepointsDistance (point1, point2) {
     var result = {}
     var movex = point2.x - point1.x
     var movey = point2.y - point1.y
     var distance = Math.sqrt(movex * movex + movey * movey)
     var angle1,
-      angle2,
-      anglebe
-    angle1 = Math.atan2(movey, movex)
+      angle1 = Math.atan2(movey, movex)
     result.offsetx = movex
     result.offsety = movey
     result.offsetdistance = distance
@@ -935,7 +919,7 @@
     return result
   }
 
-  function handleTouchsByMultiPoints(points1, points2, initDis) {
+  function handleTouchsByMultiPoints (points1, points2, initDis) {
     var result1 = caculatepointsDistance(points1[0], points1[1])
     var result2 = caculatepointsDistance(points2[0], points2[1])
     var dis = result2.offsetdistance - result1.offsetdistance
