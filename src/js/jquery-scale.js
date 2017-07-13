@@ -744,10 +744,6 @@
       x: reg.regX,
       y: reg.regY
     }
-    // return {
-    //   x: 0,
-    //   y: 0
-    // }
   }
 
   /**
@@ -758,8 +754,6 @@
    * @returns {{x: number, y: number}}
    */
   function matchPosition (container, position, bm, scale) {
-    var px = 0
-    var py = 0
     var width = container.width
     var height = container.height
     var image = bm && bm.image
@@ -769,56 +763,38 @@
     switch (position) {
       case 'top left':
       case 'left top':
-        px = 0
-        py = 0
         positionNum = 1
         break
       case 'top center':
       case 'center top':
-        px = width / 2
-        py = 0
         positionNum = 2
         break
       case 'top right':
       case 'right top':
-        px = width
-        py = 0
         positionNum = 3
         break
       case 'center left':
       case 'left center':
-        px = 0
-        py = height / 2
         positionNum = 4
         break
       case 'center center':
       case 'center':
-        px = width / 2
-        py = height / 2
         positionNum = 5
         break
       case 'center right':
       case 'right center':
-        px = width
-        py = height / 2
         positionNum = 6
         break
       case 'bottom left':
       case 'left bottom':
-        px = 0
-        py = height
         positionNum = 7
         break
       case 'bottom center':
       case 'center bottom':
-        px = width / 2
-        py = height
         positionNum = 8
         break
       case 'bottom right':
       case 'right bottom':
-        px = width
-        py = height
         positionNum = 9
         break
       default:
@@ -829,64 +805,64 @@
       1: {
         x: imageWidth / 2,
         y: imageHeight / 2,
-        regX: imageWidth / 2,
-        regY: imageHeight / 2
+        regX: imageWidth / 2 / scale.scaleX,
+        regY: imageHeight / 2 / scale.scaleY
       },
       // left center | center left
       2: {
         x: width / 2,
         y: imageHeight / 2,
-        regX: 0,
-        regY: imageHeight / 2
+        regX: imageWidth / 2 / scale.scaleX,
+        regY: imageHeight / 2 / scale.scaleX
       },
       // top right | right top
       3: {
         x: width - imageWidth / 2,
         y: imageHeight / 2,
-        regX: width / 2,
-        regY: height / 2
+        regX: imageWidth / 2 / scale.scaleX,
+        regY: imageHeight / 2 / scale.scaleY
       },
       // left center | center left
       4: {
         x: imageWidth / 2,
         y: height / 2,
-        regX: imageWidth / 2,
-        regY: 0
+        regX: imageWidth / 2 / scale.scaleX,
+        regY: imageHeight / 2 / scale.scaleY
       },
       // center center | center
       5: {
         x: width / 2,
         y: height / 2,
-        regX: imageWidth / 2,
-        regY: imageHeight / 2
+        regX: imageWidth / 2 / scale.scaleX,
+        regY: imageHeight / 2 / scale.scaleX
       },
       // right center | center right
       6: {
         x: width - imageWidth / 2,
         y: height / 2,
-        regX: imageWidth / 2,
-        regY: 0
+        regX: imageWidth / 2 / scale.scaleX,
+        regY: imageHeight / 2 / scale.scaleY
       },
       // bottom left | left bottom
       7: {
         x: imageWidth / 2,
         y: height - imageHeight / 2,
-        regX: imageWidth / 2,
-        regY: imageHeight / 2
+        regX: imageWidth / 2 / scale.scaleX,
+        regY: imageHeight / 2 / scale.scaleY
       },
       // bottom center | center bottom
       8: {
         x: width / 2,
         y: height - imageHeight / 2,
-        regX: 0,
-        regY: imageHeight / 2
+        regX: imageWidth / 2 / scale.scaleX,
+        regY: imageHeight / 2 / scale.scaleY
       },
       // bottom right | right bottom
       9: {
         x: width - imageWidth / 2,
         y: height - imageHeight / 2,
-        regX: imageWidth / 2,
-        regY: imageHeight / 2
+        regX: imageWidth / 2 / scale.scaleX,
+        regY: imageHeight / 2 / scale.scaleX
       }
     }
 

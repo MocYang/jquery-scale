@@ -3,27 +3,27 @@ $(function () {
     {
       id: 'img1',
       url: './images/22.png  ',
-      position: 'center top',
+      position: 'left bottom',
       offset: {
         x: 1,
         y: 1
       },
       interactive: true,
-      mask: true,
-      maskShape: 'rect',
-      scale: 1
+      mask: false,
+      // maskShape: 'rect',
+      scale: 0.5
     },
     {
       id: 'img2',
       url: './images/timg.jpg',
-      position: 'center',
+      position: 'left top',
       offset: {
-        x: 2,
-        y: 2
+        x: 0,
+        y: 0
       },
       mask: false,
       interactive: true,
-      scale: 1
+      scale: 0.5
     }
     // {
     //   id: 'img3',
@@ -46,8 +46,8 @@ $(function () {
     canvas.addChild({
       id: 'img6',
       url: './images/img6.jpg',
-      position: 'center right',
-      scale: 0.5,
+      position: 'right bottom',
+      scale: 0.2,
       interactive: true
     })
   })
@@ -142,8 +142,6 @@ $(function () {
     canvas.setTransform('img6', {
       // x:  0,
       // y:  0,
-      scaleX: 0.5,
-      scaleY: 0.5,
       rotation: rotation
       // skewX:  0,
       // skewY:  0,
