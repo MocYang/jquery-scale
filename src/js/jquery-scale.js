@@ -12,6 +12,7 @@
 
   // 可选的options的取值
   var option = {
+    _id: 0,
     id: 0,
     url: '',     // 默认作为背景图
 
@@ -52,7 +53,6 @@
 
   function Scale (images) {
     var self = this
-
     // 辅助函数
     /**
      * 根据给定的图片options和bm，生成scale的专用对象
@@ -99,6 +99,7 @@
       var imageOptions = null
       if (typeof options === 'string') {
         imageOptions = $.extend({}, option, {
+          _id: exitOptions ? exitOptions._id : index,
           id: index
         }, {
           url: options
@@ -111,6 +112,7 @@
         }
       } else if (typeof options === 'object') {
         imageOptions = $.extend(true, {}, option, {
+          _id: exitOptions ? exitOptions._id : index,
           id: index
         }, options)
 
@@ -183,6 +185,7 @@
           } else {
             self.images.push(newScaleObj)
           }
+          self.images = self.images.sort(function (a, b) {return a._id - b._id})
           draw(self, self.images)
           if (typeof imageOptions.interactive === 'boolean' && imageOptions.interactive) {
             addEvents(self, newScaleObj.bm, newScaleObj)
@@ -197,7 +200,7 @@
      * @param position 指定图片应该在images数组中的那个位置添加
      * @param exitOptions
      */
-    function replaceChild (options, position, exitOptions) {
+    function replaceChild (options, position, exitOptions, cb) {
       var imageOptions = generateOptions(options, exitOptions)
       var images = self.images
       position = position && Number(position)
@@ -207,7 +210,6 @@
       if (imageOptions) {
         addImage(self, imageOptions, function (bm) {
           var newScaleObj = combineScaleObjectWidthOld(imageOptions, exitOptions, bm)
-
           if (typeof position === 'number') {
             self.images.splice(position, 1, newScaleObj)
           }
@@ -215,6 +217,7 @@
           if (typeof imageOptions.interactive === 'boolean' && imageOptions.interactive) {
             addEvents(self, newScaleObj.bm, newScaleObj)
           }
+          cb && cb(newScaleObj)
         })
       }
     }
@@ -304,22 +307,21 @@
      * 替换一张图片
      * @param id
      * @param img
-     * @param keepProperties 是否保留目标元素的属性，默认不保留原属性
+     * @param keepProperties 是否保留目标元素的属性，默认保留原属性
      * @return {object}
      */
-    this.replace = function (id, img, keepProperties) {
+    this.replace = function (id, img, keepProperties, cb) {
       var options = null
-      keepProperties = keepProperties || false
+      keepProperties = keepProperties || true
       var images = self.images
       for (var i = 0; i < images.length; i++) {
         if (images[i].id === id) {
           if (keepProperties) {
             options = images[i]
           }
-          replaceChild(img, i, options)
+          replaceChild(img, i, options, cb)
         }
       }
-
       return this
     }
 
@@ -329,7 +331,8 @@
      * @param options
      */
     this.setTransform = function (id, options) {
-      var images = self.images
+      var images = self.images.slice()
+      var newImages = []
       images.forEach(function (image, i) {
         if (image.id === id) {
           var bm = image.bm
@@ -355,8 +358,10 @@
             transform.regX,
             transform.regY)
         }
+        newImages.push(image)
       })
-
+      self.images = newImages
+      draw(self, self.images)
       return this
     }
 
@@ -525,11 +530,13 @@
         x = positions.x
         y = positions.y
 
-        // 替换图片时使用上一张图片的偏移值
-      } else if ($container.image != null) {
+        // TODO: 替换图片时使用上一张图片的偏移值
+      }
+      /*else if ($container.image != null) {
+        var images = $container.images
         x = $container.image.x
         y = $container.image.y
-      }
+      }*/
 
       bm.regX = offset ? offset.x + regX : regX
       bm.regY = offset ? offset.y + regY : regY
@@ -909,6 +916,9 @@
           scaleY = containerWidth / image.width
         }
       }
+    } else if (Object.prototype.toString.call(scale) === '[object Array]') {
+      scaleX = scale[0]
+      scaleY = scale[1]
     }
 
     return {
@@ -956,10 +966,8 @@
   function draw ($container, images) {
     var stage = $container.stage
     var container = $container.container
-
     stage.removeAllChildren()
     container.removeAllChildren()
-
     images.forEach(function (img, i) {
       container.addChild(img.bm)
     })
